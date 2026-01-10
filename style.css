@@ -42,12 +42,22 @@ h1, h2, h3 { font-family: 'Poppins', sans-serif; color: var(--secondary); }
     position: sticky; top: 40px;
 }
 
+/* UPDATED PROFILE IMAGE STYLING */
 .profile-img-container {
-    width: 100px; height: 100px;
-    background: #e2e8f0; border-radius: 50%;
+    width: 140px;
+    height: 140px;
     margin: 0 auto 15px;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 2.5rem; color: var(--primary);
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid #fff;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.profile-img-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
 }
 
 .sidebar h1 { font-size: 1.4rem; margin-bottom: 5px; }
@@ -85,7 +95,7 @@ h1, h2, h3 { font-family: 'Poppins', sans-serif; color: var(--secondary); }
     border-left: 5px solid var(--primary); padding-left: 15px;
 }
 
-/* --- NEW SKILLS GRID --- */
+/* --- SKILLS GRID --- */
 .skills-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
