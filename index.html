@@ -3,35 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Atharva Nilkanth – MS CS student at UGA with expertise in Data Analytics, Machine Learning, and Software Development.">
     <title>Atharva Nilkanth | Portfolio</title>
     <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&family=Roboto:wght@300;400;500&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
     <div class="main-wrapper">
-        
-        <aside class="sidebar">
+
+        <aside class="sidebar" aria-label="Profile and education">
             <div class="profile-header">
                 <div class="profile-img-container">
-                    <img src="profile.jpg" alt="Atharva Nilkanth">
+                    <img src="profile.jpg" alt="Atharva Nilkanth – profile photo">
                 </div>
-                
+
                 <h1>Atharva Nilkanth</h1>
                 <p class="tagline">MS CS @ UGA | Ex-SLB Intern</p>
-                
+
                 <div class="social-links">
-                    <a href="https://linkedin.com/in/atharva-nilkanth" target="_blank"><i class="fa-brands fa-linkedin"></i></a>
-                    <a href="https://github.com/atharvanilkanth" target="_blank"><i class="fa-brands fa-github"></i></a>
-                    <a href="mailto:atharvanilkanth@gmail.com"><i class="fa-solid fa-envelope"></i></a>
+                    <a href="https://linkedin.com/in/atharva-nilkanth" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn profile">
+                        <i class="fa-brands fa-linkedin" aria-hidden="true"></i>
+                    </a>
+                    <a href="https://github.com/atharvanilkanth" target="_blank" rel="noopener noreferrer" aria-label="GitHub profile">
+                        <i class="fa-brands fa-github" aria-hidden="true"></i>
+                    </a>
+                    <a href="mailto:atharvanilkanth@gmail.com" aria-label="Send email to atharvanilkanth@gmail.com">
+                        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
+                    </a>
                 </div>
-                
-                <a href="resume.pdf" class="btn btn-primary" target="_blank">Download Resume <i class="fa-solid fa-download"></i></a>
+
+                <a href="resume.pdf" class="btn btn-primary" target="_blank" rel="noopener noreferrer">
+                    Download Resume <i class="fa-solid fa-download" aria-hidden="true"></i>
+                </a>
             </div>
 
             <div class="sidebar-section">
-                <h3><i class="fa-solid fa-graduation-cap"></i> Education</h3>
+                <h2><i class="fa-solid fa-graduation-cap" aria-hidden="true"></i> Education</h2>
                 <div class="edu-item">
                     <strong>University of Georgia</strong>
                     <p>MS in Computer Science</p>
@@ -45,23 +58,25 @@
             </div>
         </aside>
 
-        <main class="content">
-            
-            <section id="about" class="card">
-                <h2>About Me</h2>
+        <main class="content" id="main-content">
+
+            <section id="about" class="card" aria-labelledby="about-heading">
+                <h2 id="about-heading" class="section-heading">About Me</h2>
                 <p>
-                    I am a Master's student in Computer Science at the <strong>University of Georgia</strong> with a strong foundation in Data Analytics, Machine Learning, and Software Development. 
-                    Previously, I worked as a <strong>Data & Technical Communication Intern at SLB</strong>, where I optimized documentation workflows and collaborated with AI teams[cite: 16, 17, 20].
+                    I am a Master's student in Computer Science at the <strong>University of Georgia</strong> with a strong
+                    foundation in Data Analytics, Machine Learning, and Software Development.
+                    Previously, I worked as a <strong>Data &amp; Technical Communication Intern at SLB</strong>, where I
+                    optimized documentation workflows and collaborated with AI teams.
                     I am passionate about building scalable systems and deriving insights from data.
                 </p>
             </section>
 
-            <section id="skills" class="card">
-                <h2 class="section-heading">Technical Skills</h2>
+            <section id="skills" class="card" aria-labelledby="skills-heading">
+                <h2 id="skills-heading" class="section-heading">Technical Skills</h2>
                 <div class="skills-grid">
-                    
+
                     <div class="skill-group">
-                        <h3><i class="fa-solid fa-code"></i> Programming & Analysis</h3>
+                        <h3><i class="fa-solid fa-code" aria-hidden="true"></i> Programming &amp; Analysis</h3>
                         <div class="skill-tags">
                             <span>Python (Pandas, NumPy)</span>
                             <span>SQL (Joins, CTEs)</span>
@@ -71,7 +86,7 @@
                     </div>
 
                     <div class="skill-group">
-                        <h3><i class="fa-solid fa-brain"></i> AI & Machine Learning</h3>
+                        <h3><i class="fa-solid fa-brain" aria-hidden="true"></i> AI &amp; Machine Learning</h3>
                         <div class="skill-tags">
                             <span>Scikit-learn</span>
                             <span>TensorFlow</span>
@@ -83,7 +98,7 @@
                     </div>
 
                     <div class="skill-group">
-                        <h3><i class="fa-solid fa-chart-pie"></i> Data Visualization & BI</h3>
+                        <h3><i class="fa-solid fa-chart-pie" aria-hidden="true"></i> Data Visualization &amp; BI</h3>
                         <div class="skill-tags">
                             <span>Tableau</span>
                             <span>Power BI</span>
@@ -94,7 +109,7 @@
                     </div>
 
                     <div class="skill-group">
-                        <h3><i class="fa-solid fa-database"></i> Data Quality</h3>
+                        <h3><i class="fa-solid fa-database" aria-hidden="true"></i> Data Quality</h3>
                         <div class="skill-tags">
                             <span>Data Cleaning</span>
                             <span>Data Profiling</span>
@@ -103,7 +118,7 @@
                     </div>
 
                     <div class="skill-group">
-                        <h3><i class="fa-solid fa-chart-line"></i> Statistical Analytics</h3>
+                        <h3><i class="fa-solid fa-chart-line" aria-hidden="true"></i> Statistical Analytics</h3>
                         <div class="skill-tags">
                             <span>A/B Testing</span>
                             <span>Time Series Forecasting</span>
@@ -115,56 +130,64 @@
                 </div>
             </section>
 
-            <section id="experience">
-                <h2 class="section-heading">Experience</h2>
+            <section id="experience" aria-labelledby="experience-heading">
+                <h2 id="experience-heading" class="section-heading">Experience</h2>
                 <div class="card experience-card">
                     <div class="exp-header">
                         <h3>Schlumberger (SLB)</h3>
                         <span class="date">Feb 2025 – June 2025</span>
                     </div>
-                    <p class="role">Data & Technical Communication Intern | Pune, India</p>
+                    <p class="role">Data &amp; Technical Communication Intern | Pune, India</p>
                     <ul class="exp-list">
-                        <li>Authored over 25 technical articles for internal knowledge bases covering proprietary drilling equipment[cite: 19].</li>
-                        <li>Collaborated with AI/ML engineering teams to translate complex model specifications into clear user guides[cite: 20].</li>
-                        <li>Redesigned the documentation portal's architecture, significantly reducing support tickets[cite: 21].</li>
+                        <li>Authored over 25 technical articles for internal knowledge bases covering proprietary drilling equipment.</li>
+                        <li>Collaborated with AI/ML engineering teams to translate complex model specifications into clear user guides.</li>
+                        <li>Redesigned the documentation portal's architecture, significantly reducing support tickets.</li>
                     </ul>
                 </div>
             </section>
 
-            <section id="projects">
-                <h2 class="section-heading">Featured Projects</h2>
+            <section id="projects" aria-labelledby="projects-heading">
+                <h2 id="projects-heading" class="section-heading">Featured Projects</h2>
                 <div class="projects-grid">
-                    
+
                     <div class="card project-card">
-                        <div class="project-icon"><i class="fa-solid fa-shield-virus"></i></div>
+                        <div class="project-icon" aria-hidden="true"><i class="fa-solid fa-shield-virus"></i></div>
                         <h3>Malware Classification</h3>
                         <p class="tech">Python • XGBoost • Scikit-Learn</p>
-                        <p>Developed a machine learning system to classify malicious binaries using static features like opcode frequency and PE headers[cite: 33, 34].</p>
-                        <a href="https://github.com/atharvanilkanth" target="_blank" class="project-link">View Project <i class="fa-solid fa-arrow-right"></i></a>
+                        <p>Developed a machine learning system to classify malicious binaries using static features like opcode frequency and PE headers.</p>
+                        <a href="https://github.com/atharvanilkanth" target="_blank" rel="noopener noreferrer" class="project-link">
+                            View Project <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     </div>
 
                     <div class="card project-card">
-                        <div class="project-icon"><i class="fa-solid fa-robot"></i></div>
+                        <div class="project-icon" aria-hidden="true"><i class="fa-solid fa-robot"></i></div>
                         <h3>AI Phenotype Chatbot</h3>
                         <p class="tech">NLP • RASA • Python</p>
-                        <p><strong>Top 60 @ Smart India Hackathon.</strong> An NLP chatbot that determines phenotype (Prakriti) based on user inputs, reducing assessment time by 75%[cite: 23, 24, 25].</p>
-                        <a href="https://github.com/atharvanilkanth" target="_blank" class="project-link">View Project <i class="fa-solid fa-arrow-right"></i></a>
+                        <p><strong>Top 60 @ Smart India Hackathon.</strong> An NLP chatbot that determines phenotype (Prakriti) based on user inputs, reducing assessment time by 75%.</p>
+                        <a href="https://github.com/atharvanilkanth" target="_blank" rel="noopener noreferrer" class="project-link">
+                            View Project <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     </div>
 
                     <div class="card project-card">
-                        <div class="project-icon"><i class="fa-solid fa-mobile-screen"></i></div>
+                        <div class="project-icon" aria-hidden="true"><i class="fa-solid fa-mobile-screen"></i></div>
                         <h3>Women's Safety App</h3>
                         <p class="tech">Android • Java • GPS</p>
-                        <p>Designed a safety app with real-time GPS tracking and SOS alerts, reducing emergency response initiation time by 70%[cite: 27, 28].</p>
-                        <a href="https://github.com/atharvanilkanth" target="_blank" class="project-link">View Project <i class="fa-solid fa-arrow-right"></i></a>
+                        <p>Designed a safety app with real-time GPS tracking and SOS alerts, reducing emergency response initiation time by 70%.</p>
+                        <a href="https://github.com/atharvanilkanth" target="_blank" rel="noopener noreferrer" class="project-link">
+                            View Project <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     </div>
 
                     <div class="card project-card">
-                        <div class="project-icon"><i class="fa-solid fa-cloud-sun"></i></div>
+                        <div class="project-icon" aria-hidden="true"><i class="fa-solid fa-cloud-sun"></i></div>
                         <h3>Weather Outfit Recommender</h3>
                         <p class="tech">JavaScript • APIs</p>
-                        <p>Dynamic web app providing clothing suggestions based on real-time temperature and wind conditions with 90% user satisfaction[cite: 30, 31].</p>
-                        <a href="https://github.com/atharvanilkanth" target="_blank" class="project-link">View Project <i class="fa-solid fa-arrow-right"></i></a>
+                        <p>Dynamic web app providing clothing suggestions based on real-time temperature and wind conditions with 90% user satisfaction.</p>
+                        <a href="https://github.com/atharvanilkanth" target="_blank" rel="noopener noreferrer" class="project-link">
+                            View Project <i class="fa-solid fa-arrow-right" aria-hidden="true"></i>
+                        </a>
                     </div>
 
                 </div>
@@ -172,6 +195,10 @@
 
         </main>
     </div>
+
+    <footer>
+        <p>&copy; 2025 Atharva Nilkanth. All rights reserved.</p>
+    </footer>
 
 </body>
 </html>
