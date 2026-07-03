@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Atharva Nilkanth — ML Engineer · Human Activity Recognition</title>
+<meta name="description" content="Atharva Nilkanth — MS CS student at the University of Georgia building synthetic sensor data pipelines for smart-home human activity recognition.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,100..900&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#EEF0EB;
+  --paper-raise:#F6F7F4;
+  --ink:#14211C;
+  --ink-soft:#42524B;
+  --line:rgba(20,33,28,.14);
+  --grid:rgba(20,33,28,.055);
+  --signal:#E8590C;
+  --on:#2F9E44;
+  --off:#98A29C;
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --sans:'Archivo',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto}
+  *,*::before,*::after{animation-duration:.001s!important;animation-iteration-count:1!important;transition-duration:.001s!important}
+}
+body{
+  font-family:var(--sans);
+  background:var(--paper);
+  color:var(--ink);
+  background-image:
+    linear-gradient(var(--grid) 1px,transparent 1px),
+    linear-gradient(90deg,var(--grid) 1px,transparent 1px);
+  background-size:36px 36px;
+  line-height:1.55;
+  font-size:16px;
+}
+::selection{background:var(--signal);color:var(--paper)}
+a{color:inherit}
+a:focus-visible,button:focus-visible{outline:2px solid var(--signal);outline-offset:3px;border-radius:2px}
+
+/* ---------- top status bar ---------- */
+.statusbar{
+  position:fixed;top:0;left:0;right:0;z-index:60;
+  display:flex;align-items:center;gap:14px;
+  padding:10px 20px;
+  font-family:var(--mono);font-size:11px;letter-spacing:.04em;
+  background:rgba(238,240,235,.88);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--line);
+}
+.statusbar .sysid{font-weight:600}
+.statusbar .dot{width:8px;height:8px;border-radius:50%;background:var(--on);flex:none;animation:pulse 2.2s infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(47,158,68,.5)}55%{box-shadow:0 0 0 7px rgba(47,158,68,0)}}
+.statusbar nav{margin-left:auto;display:flex;gap:18px}
+.statusbar nav a{text-decoration:none;color:var(--ink-soft)}
+.statusbar nav a:hover{color:var(--signal)}
+#clock{color:var(--ink-soft)}
+@media(max-width:720px){.statusbar nav{display:none}#clock{margin-left:auto}}
+
+/* ---------- layout ---------- */
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* ---------- hero ---------- */
+.hero{padding:130px 0 70px;display:grid;grid-template-columns:1.15fr .85fr;gap:56px;align-items:center}
+@media(max-width:900px){.hero{grid-template-columns:1fr;padding-top:110px;gap:40px}}
+.eyebrow{
+  font-family:var(--mono);font-size:12px;letter-spacing:.08em;
+  color:var(--signal);display:flex;align-items:center;gap:10px;margin-bottom:22px;
+}
+.eyebrow::before{content:"";width:26px;height:1px;background:var(--signal)}
+.hero h1{
+  font-weight:900;font-stretch:112%;
+  font-size:clamp(46px,7.2vw,86px);
+  line-height:.95;letter-spacing:-.02em;text-transform:uppercase;
+}
+.hero h1 .thin{display:block;font-weight:300;font-stretch:80%;color:var(--ink-soft)}
+.hero p.sub{margin-top:26px;max-width:46ch;font-size:17px;color:var(--ink-soft)}
+.hero p.sub b{color:var(--ink)}
+.hero-links{margin-top:30px;display:flex;flex-wrap:wrap;gap:12px}
+.btn{
+  font-family:var(--mono);font-size:12.5px;letter-spacing:.04em;
+  text-decoration:none;padding:11px 18px;border:1px solid var(--ink);
+  display:inline-flex;align-items:center;gap:8px;background:var(--paper-raise);
+  transition:transform .15s,box-shadow .15s;
+}
+.btn:hover{transform:translate(-2px,-2px);box-shadow:3px 3px 0 var(--ink)}
+.btn.solid{background:var(--ink);color:var(--paper)}
+.btn.solid:hover{box-shadow:3px 3px 0 var(--signal)}
+
+/* ---------- floor plan ---------- */
+.plan{position:relative}
+.plan svg{width:100%;height:auto;display:block}
+.plan .cap{
+  font-family:var(--mono);font-size:11px;color:var(--ink-soft);
+  margin-top:10px;display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;
+}
+.room{cursor:pointer}
+.room rect{fill:var(--paper-raise);stroke:var(--ink);stroke-width:1.5;transition:fill .2s}
+.room:hover rect,.room:focus rect{fill:#E4E9E2}
+.room text{font-family:var(--mono);font-size:10.5px;fill:var(--ink);letter-spacing:.05em}
+.room .rid{fill:var(--ink-soft);font-size:9px}
+.sensor{fill:var(--on)}
+.sensor.s2{fill:var(--signal)}
+.ping{fill:none;stroke:var(--on);stroke-width:1.4;opacity:0;transform-origin:center;animation:ping 3s infinite}
+.ping.p2{stroke:var(--signal);animation-delay:1s}
+.ping.p3{animation-delay:1.9s}
+@keyframes ping{0%{opacity:.85;r:4}70%{opacity:0;r:16}100%{opacity:0;r:16}}
+
+/* ---------- activity log (signature) ---------- */
+.alog{
+  position:fixed;left:18px;bottom:18px;z-index:70;width:330px;
+  background:var(--ink);color:#D9E2DC;border:1px solid var(--ink);
+  font-family:var(--mono);font-size:11px;line-height:1.7;
+  box-shadow:6px 6px 0 rgba(20,33,28,.18);
+}
+.alog header{
+  display:flex;align-items:center;gap:8px;padding:8px 12px;
+  border-bottom:1px solid rgba(217,226,220,.2);color:#fff;
+  font-size:11px;letter-spacing:.06em;font-weight:600;
+}
+.alog header .rec{width:7px;height:7px;border-radius:50%;background:var(--signal);animation:pulse 1.6s infinite}
+.alog header button{
+  margin-left:auto;background:none;border:1px solid rgba(217,226,220,.35);
+  color:#D9E2DC;font-family:var(--mono);font-size:10px;padding:2px 8px;cursor:pointer;
+}
+.alog header button:hover{border-color:#fff;color:#fff}
+.alog ul{list-style:none;padding:10px 12px;max-height:148px;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.alog li{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.alog li .t{color:#8FA39A}
+.alog li .on{color:#6FCF82}
+.alog li .sig{color:#FF8A50}
+.alog li.cursor::after{content:"▌";animation:blink 1s step-end infinite;color:#6FCF82}
+@keyframes blink{50%{opacity:0}}
+.alog.min ul{display:none}
+@media(max-width:720px){.alog{width:calc(100% - 32px);left:16px;bottom:12px}.alog ul{max-height:96px}}
+
+/* ---------- sections ---------- */
+section{padding:64px 0;border-top:1px solid var(--line)}
+.shead{display:flex;align-items:baseline;gap:16px;margin-bottom:38px;flex-wrap:wrap}
+.shead .sid{
+  font-family:var(--mono);font-size:12px;color:var(--paper);
+  background:var(--off);padding:3px 9px;letter-spacing:.05em;transition:background .3s;
+}
+section.fired .shead .sid{background:var(--on)}
+.shead h2{
+  font-weight:900;font-stretch:110%;text-transform:uppercase;
+  font-size:clamp(26px,3.4vw,38px);letter-spacing:-.01em;
+}
+.shead .meta{font-family:var(--mono);font-size:11px;color:var(--ink-soft);margin-left:auto}
+@media(max-width:720px){.shead .meta{display:none}}
+
+/* entries as log rows */
+.entry{
+  display:grid;grid-template-columns:190px 1fr;gap:26px;
+  padding:26px 0;border-top:1px dashed var(--line);
+}
+.entry:first-of-type{border-top:none}
+@media(max-width:720px){.entry{grid-template-columns:1fr;gap:8px}}
+.entry .when{font-family:var(--mono);font-size:12px;color:var(--ink-soft)}
+.entry .when .state{display:flex;align-items:center;gap:7px;margin-top:6px;font-size:10.5px}
+.entry .when .state i{width:7px;height:7px;border-radius:50%;background:var(--off);flex:none}
+.entry .when .state.live{color:var(--on)}
+.entry .when .state.live i{background:var(--on);animation:pulse 2.2s infinite}
+.entry h3{font-size:19px;font-weight:700;letter-spacing:-.01em}
+.entry .org{font-family:var(--mono);font-size:12px;color:var(--signal);margin:3px 0 10px}
+.entry ul{list-style:none;color:var(--ink-soft);font-size:15px}
+.entry ul li{padding-left:18px;position:relative;margin-bottom:7px}
+.entry ul li::before{content:"▸";position:absolute;left:0;color:var(--signal);font-size:11px;top:4px}
+
+/* projects */
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media(max-width:900px){.pgrid{grid-template-columns:1fr}}
+.pcard{
+  border:1.5px solid var(--ink);background:var(--paper-raise);
+  padding:22px;display:flex;flex-direction:column;gap:12px;position:relative;
+  transition:transform .15s,box-shadow .15s;text-decoration:none;
+}
+.pcard:hover{transform:translate(-3px,-3px);box-shadow:5px 5px 0 var(--ink)}
+.pcard.flag{grid-column:1 / -1;background:var(--ink);color:var(--paper)}
+.pcard.flag:hover{box-shadow:5px 5px 0 var(--signal)}
+.pcard .pid{font-family:var(--mono);font-size:10.5px;letter-spacing:.06em;color:var(--signal);display:flex;justify-content:space-between;gap:10px}
+.pcard h3{font-size:20px;font-weight:800;letter-spacing:-.01em}
+.pcard.flag h3{font-size:clamp(22px,2.6vw,28px)}
+.pcard p{font-size:14.5px;color:var(--ink-soft)}
+.pcard.flag p{color:#C7D2CB;max-width:74ch}
+.tags{display:flex;flex-wrap:wrap;gap:7px;margin-top:auto}
+.tags span{font-family:var(--mono);font-size:10.5px;border:1px solid var(--line);padding:3px 8px;color:var(--ink-soft)}
+.pcard.flag .tags span{border-color:rgba(217,226,220,.3);color:#C7D2CB}
+.pcard .go{font-family:var(--mono);font-size:11.5px;color:var(--signal);margin-top:4px}
+
+/* skills */
+.skgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1.5px solid var(--ink);background:var(--paper-raise)}
+@media(max-width:900px){.skgrid{grid-template-columns:1fr}}
+.skcell{padding:22px;border-right:1px dashed var(--line);border-bottom:1px dashed var(--line)}
+.skcell h4{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--signal);margin-bottom:12px;font-weight:600}
+.skcell .chips{display:flex;flex-wrap:wrap;gap:7px}
+.skcell .chips span{font-family:var(--mono);font-size:12px;background:var(--paper);border:1px solid var(--line);padding:4px 9px}
+
+/* achievements */
+.ach{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media(max-width:720px){.ach{grid-template-columns:1fr}}
+.acard{border-left:3px solid var(--signal);padding:6px 0 6px 18px}
+.acard h3{font-size:17px;font-weight:700}
+.acard p{font-size:14.5px;color:var(--ink-soft);margin-top:4px}
+.acard .yr{font-family:var(--mono);font-size:11px;color:var(--signal)}
+
+/* contact */
+.contact{padding:80px 0 120px;text-align:left}
+.contact h2{font-weight:900;font-stretch:112%;text-transform:uppercase;font-size:clamp(34px,5.5vw,64px);line-height:1;letter-spacing:-.02em}
+.contact h2 span{color:var(--signal)}
+.contact p{margin:20px 0 30px;color:var(--ink-soft);max-width:52ch}
+footer{border-top:1px solid var(--line);padding:22px 0 150px;font-family:var(--mono);font-size:11px;color:var(--ink-soft);display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+</style>
+</head>
+<body>
+
+<div class="statusbar">
+  <span class="dot" aria-hidden="true"></span>
+  <span class="sysid">AN-HOME · atharva_nilkanth.sys</span>
+  <span id="clock" aria-hidden="true"></span>
+  <nav aria-label="Sections">
+    <a href="#experience">experience</a>
+    <a href="#projects">projects</a>
+    <a href="#skills">skills</a>
+    <a href="#education">education</a>
+    <a href="#contact">contact</a>
+  </nav>
+</div>
+
+<!-- signature: the site senses YOU -->
+<aside class="alog" id="alog" aria-label="Live visitor activity log">
+  <header>
+    <span class="rec" aria-hidden="true"></span> ACTIVITY LOG — resident_01 (you)
+    <button id="alogToggle" aria-expanded="true">hide</button>
+  </header>
+  <ul id="alogList" aria-live="polite"></ul>
+</aside>
+
+<main class="wrap">
+
+  <!-- HERO -->
+  <div class="hero">
+    <div>
+      <div class="eyebrow">SUBJECT DETECTED · CLASSIFYING ACTIVITY…</div>
+      <h1>Atharva<br>Nilkanth
+        <span class="thin">teaches machines to read rooms.</span>
+      </h1>
+      <p class="sub">ML engineer & MS CS student at the <b>University of Georgia</b>. I build <b>synthetic sensor-data pipelines</b> for smart-home human activity recognition — plus automation, backends, and models that survive contact with real data.</p>
+      <div class="hero-links">
+        <a class="btn solid" href="#projects">▸ view projects</a>
+        <a class="btn" href="https://github.com/atharvanilkanth" target="_blank" rel="noopener">github ↗</a>
+        <a class="btn" href="https://linkedin.com/in/atharva-nilkanth" target="_blank" rel="noopener">linkedin ↗</a>
+      </div>
+    </div>
+
+    <!-- floor plan -->
+    <div class="plan" aria-label="Interactive smart-home floor plan; each room links to a section">
+      <svg viewBox="0 0 360 300" role="img" aria-label="Smart home floor plan with pulsing sensors">
+        <!-- outer wall -->
+        <rect x="8" y="8" width="344" height="284" fill="none" stroke="var(--ink)" stroke-width="2"/>
+        <!-- rooms -->
+        <a class="room" href="#experience" aria-label="Office room, links to experience">
+          <rect x="8" y="8" width="200" height="140"/>
+          <text x="22" y="32">OFFICE</text>
+          <text class="rid" x="22" y="46">→ experience</text>
+          <circle class="sensor" cx="180" cy="30" r="4"/>
+          <circle class="ping" cx="180" cy="30" r="4"/>
+        </a>
+        <a class="room" href="#projects" aria-label="Lab room, links to projects">
+          <rect x="208" y="8" width="144" height="190"/>
+          <text x="222" y="32">LAB</text>
+          <text class="rid" x="222" y="46">→ projects</text>
+          <circle class="sensor s2" cx="330" cy="30" r="4"/>
+          <circle class="ping p2" cx="330" cy="30" r="4"/>
+        </a>
+        <a class="room" href="#education" aria-label="Study room, links to education">
+          <rect x="8" y="148" width="200" height="144"/>
+          <text x="22" y="172">STUDY</text>
+          <text class="rid" x="22" y="186">→ education</text>
+          <circle class="sensor" cx="180" cy="270" r="4"/>
+          <circle class="ping p3" cx="180" cy="270" r="4"/>
+        </a>
+        <a class="room" href="#skills" aria-label="Utility room, links to skills">
+          <rect x="208" y="198" width="144" height="94"/>
+          <text x="222" y="222">UTILITY</text>
+          <text class="rid" x="222" y="236">→ skills</text>
+          <circle class="sensor" cx="330" cy="270" r="4"/>
+        </a>
+        <!-- door gap -->
+        <line x1="8" y1="8" x2="8" y2="292" stroke="var(--paper)" stroke-width="3" stroke-dasharray="0 120 26 400"/>
+        <text x="14" y="132" font-family="var(--mono)" font-size="9" fill="var(--signal)">D001</text>
+      </svg>
+      <div class="cap">
+        <span>fig. 01 — click a room to enter</span>
+        <span><span style="color:var(--on)">●</span> motion &nbsp; <span style="color:var(--signal)">●</span> active zone</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- EXPERIENCE -->
+  <section id="experience" data-sensor="M101" data-label="EXPERIENCE">
+    <div class="shead">
+      <span class="sid">M101</span>
+      <h2>Experience</h2>
+      <span class="meta">room: OFFICE · events: 2</span>
+    </div>
+
+    <div class="entry">
+      <div class="when">
+        2026-06 → present
+        <div class="state live"><i></i>SENSOR ON</div>
+      </div>
+      <div>
+        <h3>Workflow Automation Intern</h3>
+        <div class="org">Global Student Engagement · University of Georgia — Athens, GA</div>
+        <ul>
+          <li>Engineered Power Automate workflows replacing manual coordination for International Education Month across 5+ staff roles, supporting programs for 1,000+ international students.</li>
+          <li>Mapped process dependencies and bottlenecks; produced data-informed redesign recommendations adopted by the team.</li>
+          <li>Built automated reminders, dynamic intake forms, and scheduling tools — cutting ~5+ hours of manual overhead per week.</li>
+          <li>Authored documentation and user guides so non-technical staff can run the systems long after the internship ends.</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="when">
+        2025-02 → 2025-06
+        <div class="state"><i></i>SENSOR OFF</div>
+      </div>
+      <div>
+        <h3>Data &amp; Technical Communication Intern</h3>
+        <div class="org">Schlumberger (SLB) — Pune, India</div>
+        <ul>
+          <li>Analyzed large operational datasets in Python (Pandas, NumPy), fixing inconsistencies to improve data quality for downstream ML tasks.</li>
+          <li>Reviewed ML model I/O behavior and documented preprocessing and inference logic, enabling reproducible experiments.</li>
+          <li>Diagnosed and resolved data-pipeline issues affecting ML outputs in an enterprise environment.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- PROJECTS -->
+  <section id="projects" data-sensor="M102" data-label="PROJECTS">
+    <div class="shead">
+      <span class="sid">M102</span>
+      <h2>Projects</h2>
+      <span class="meta">room: LAB · events: 3</span>
+    </div>
+
+    <div class="pgrid">
+      <a class="pcard flag" href="https://github.com/atharvanilkanth" target="_blank" rel="noopener">
+        <div class="pid"><span>P-001 · FLAGSHIP</span><span>STATUS: ACTIVE</span></div>
+        <h3>Multi-Resident Smart-Home Synthetic Data Pipeline</h3>
+        <p>A reproducible 8-stage pipeline that generates per-resident synthetic sensor streams and merges them with coordination rules to model realistic multi-resident activity (CASAS Cairo format). Includes a rule-based validation/repair layer enforcing physical constraints, benchmarked across a four-variant ablation with Jensen-Shannon divergence, constraint-violation rates, and Random Forest on real vs. synthetic windows.</p>
+        <div class="tags"><span>Python</span><span>Scikit-learn</span><span>Pandas</span><span>NumPy</span><span>CASAS</span></div>
+        <span class="go">open on github ↗</span>
+      </a>
+
+      <a class="pcard" href="https://github.com/atharvanilkanth" target="_blank" rel="noopener" style="grid-column:span 1">
+        <div class="pid"><span>P-002</span></div>
+        <h3>Malware Classification System</h3>
+        <p>Full-stack ML app: Django backend + REST APIs serving XGBoost, Random Forest, and SVM classifiers over PE headers and opcode patterns, with end-to-end unit and integration test coverage.</p>
+        <div class="tags"><span>Django</span><span>XGBoost</span><span>SVM</span><span>REST</span></div>
+        <span class="go">open on github ↗</span>
+      </a>
+
+      <a class="pcard" href="https://github.com/atharvanilkanth" target="_blank" rel="noopener">
+        <div class="pid"><span>P-003</span></div>
+        <h3>Phenotype Analysis Chatbot</h3>
+        <p>NLP chatbot built on the RASA framework — 75% reduction in assessment time through robust intent classification, backed by reliable inference services and thorough testing.</p>
+        <div class="tags"><span>RASA</span><span>NLP</span><span>Python</span></div>
+        <span class="go">open on github ↗</span>
+      </a>
+
+      <div class="pcard" aria-hidden="true" style="justify-content:center;align-items:flex-start;border-style:dashed;background:transparent">
+        <div class="pid"><span>P-004</span></div>
+        <h3 style="color:var(--ink-soft)">Next event pending…</h3>
+        <p>Currently extending the pipeline toward multi-resident HAR research. Watch this sensor.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SKILLS -->
+  <section id="skills" data-sensor="M103" data-label="SKILLS">
+    <div class="shead">
+      <span class="sid">M103</span>
+      <h2>Skills</h2>
+      <span class="meta">room: UTILITY · channels: 6</span>
+    </div>
+    <div class="skgrid">
+      <div class="skcell">
+        <h4>LANGUAGES</h4>
+        <div class="chips"><span>Python</span><span>Java</span><span>R</span><span>SQL</span></div>
+      </div>
+      <div class="skcell">
+        <h4>ML / AI</h4>
+        <div class="chips"><span>PyTorch</span><span>TensorFlow</span><span>Scikit-learn</span><span>XGBoost</span><span>Random Forest</span><span>SVM</span><span>RASA (NLP)</span></div>
+      </div>
+      <div class="skcell">
+        <h4>BACKEND &amp; DATABASES</h4>
+        <div class="chips"><span>Django</span><span>REST APIs</span><span>MongoDB</span><span>MySQL</span><span>Data pipelines</span></div>
+      </div>
+      <div class="skcell">
+        <h4>DATA &amp; BI</h4>
+        <div class="chips"><span>Pandas</span><span>NumPy</span><span>Matplotlib</span><span>Tableau</span><span>Power BI</span></div>
+      </div>
+      <div class="skcell">
+        <h4>TESTING &amp; TOOLS</h4>
+        <div class="chips"><span>Unit / Integration Testing</span><span>Git</span><span>GitHub</span></div>
+      </div>
+      <div class="skcell">
+        <h4>AUTOMATION</h4>
+        <div class="chips"><span>Power Automate</span><span>MS Planner</span><span>Process mapping</span><span>Workflow design</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDUCATION -->
+  <section id="education" data-sensor="M104" data-label="EDUCATION">
+    <div class="shead">
+      <span class="sid">M104</span>
+      <h2>Education</h2>
+      <span class="meta">room: STUDY · events: 2</span>
+    </div>
+
+    <div class="entry">
+      <div class="when">
+        2025 → 2027 (exp.)
+        <div class="state live"><i></i>SENSOR ON</div>
+      </div>
+      <div>
+        <h3>MS, Computer Science</h3>
+        <div class="org">University of Georgia — Athens, GA</div>
+        <ul><li>Graduate research focus: smart-home human activity recognition and synthetic sensor data generation.</li></ul>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="when">
+        2021 → 2025
+        <div class="state"><i></i>SENSOR OFF</div>
+      </div>
+      <div>
+        <h3>BTech, Computer Science</h3>
+        <div class="org">MIT-ADT University — Pune, India · GPA 3.49/4.0</div>
+        <ul><li>Coursework: Machine Learning, Artificial Intelligence, Data Structures &amp; Algorithms, Database Systems.</li></ul>
+      </div>
+    </div>
+
+    <div class="ach" style="margin-top:38px">
+      <div class="acard">
+        <span class="yr">2024</span>
+        <h3>1st Place — KIMO.AI Innovation Competition</h3>
+        <p>First prize among 30+ university teams, judged on technical implementation and real-world impact.</p>
+      </div>
+      <div class="acard">
+        <span class="yr">MIT SWIFT CODING CLUB</span>
+        <h3>Event Management Lead</h3>
+        <p>Organized 10+ coding competitions and technical events for 200+ student participants.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CONTACT -->
+  <section id="contact" class="contact" data-sensor="D002" data-label="CONTACT">
+    <div class="eyebrow">D002 OPEN · EXIT DETECTED</div>
+    <h2>Leaving already?<br><span>Trigger one last sensor.</span></h2>
+    <p>Open to ML research collaborations, internships, and roles where data pipelines meet the real world. I usually respond fast.</p>
+    <div class="hero-links">
+      <a class="btn solid" href="mailto:atharvanilkanth@gmail.com">▸ atharvanilkanth@gmail.com</a>
+      <a class="btn" href="tel:+17062543849">(706) 254-3849</a>
+      <a class="btn" href="https://github.com/atharvanilkanth" target="_blank" rel="noopener">github ↗</a>
+      <a class="btn" href="https://linkedin.com/in/atharva-nilkanth" target="_blank" rel="noopener">linkedin ↗</a>
+    </div>
+  </section>
+
+  <footer>
+    <span>© 2026 Atharva Nilkanth · Athens, GA</span>
+    <span>AN-HOME v1.0 — no residents were surveilled in the making of this site.</span>
+  </footer>
+</main>
+
+<script>
+(function(){
+  var reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  /* clock */
+  var clock = document.getElementById('clock');
+  function tick(){
+    var d = new Date();
+    clock.textContent = d.toISOString().slice(0,10) + ' ' + d.toTimeString().slice(0,8);
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* activity log */
+  var list = document.getElementById('alogList');
+  var MAX = 7;
+  function stamp(){
+    var d = new Date();
+    return d.toTimeString().slice(0,8);
+  }
+  function log(sensor, state, label, sig){
+    var li = document.createElement('li');
+    li.innerHTML = '<span class="t">' + stamp() + '</span> ' +
+      sensor + ' <span class="' + (sig ? 'sig' : 'on') + '">' + state + '</span> — ' + label;
+    var old = list.querySelector('.cursor');
+    if(old) old.classList.remove('cursor');
+    li.classList.add('cursor');
+    list.appendChild(li);
+    while(list.children.length > MAX) list.removeChild(list.firstChild);
+  }
+
+  log('D000','OPEN','session start · resident_01 detected', true);
+  setTimeout(function(){ log('M100','ON','viewing HERO'); }, 700);
+
+  /* section sensors */
+  var seen = {};
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if(e.isIntersecting){
+        var id = e.target.dataset.sensor, label = e.target.dataset.label;
+        e.target.classList.add('fired');
+        if(!seen[id]){ seen[id] = true; log(id,'ON','viewing ' + label); }
+        else { log(id,'ON','re-entered ' + label); }
+      }
+    });
+  }, {threshold: 0.25});
+  document.querySelectorAll('section[data-sensor]').forEach(function(s){ io.observe(s); });
+
+  /* project hovers */
+  document.querySelectorAll('.pcard[href]').forEach(function(c, i){
+    var name = c.querySelector('h3').textContent;
+    var fired = false;
+    c.addEventListener('mouseenter', function(){
+      if(!fired){ log('P-00' + (i+1),'FOCUS','inspecting ' + name.slice(0,32) + '…', true); fired = true;
+        setTimeout(function(){ fired = false; }, 8000); }
+    });
+  });
+
+  /* room clicks */
+  document.querySelectorAll('.room').forEach(function(r){
+    r.addEventListener('click', function(){
+      var target = r.getAttribute('href').slice(1);
+      log('D001','OPEN','entering ' + target.toUpperCase(), true);
+    });
+  });
+
+  /* idle detection — a HAR easter egg */
+  var idleTimer;
+  function resetIdle(){
+    clearTimeout(idleTimer);
+    idleTimer = setTimeout(function(){
+      log('M999','OFF','no motion detected · resident idle', true);
+    }, 25000);
+  }
+  ['scroll','mousemove','keydown','touchstart'].forEach(function(ev){
+    window.addEventListener(ev, resetIdle, {passive:true});
+  });
+  resetIdle();
+
+  /* toggle */
+  var alog = document.getElementById('alog');
+  var btn = document.getElementById('alogToggle');
+  btn.addEventListener('click', function(){
+    var min = alog.classList.toggle('min');
+    btn.textContent = min ? 'show' : 'hide';
+    btn.setAttribute('aria-expanded', String(!min));
+  });
+
+  /* exit intent */
+  document.addEventListener('mouseleave', function(){
+    log('D002','AJAR','resident approaching exit…', true);
+  });
+})();
+</script>
+</body>
+</html>
