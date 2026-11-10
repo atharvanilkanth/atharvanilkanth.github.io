@@ -277,9 +277,9 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
         <h3>Graduate Researcher</h3>
         <div class="org">School of Computing, University of Georgia, Athens, GA</div>
         <ul>
-          <li>Thesis on multi-resident human activity recognition: extending AgentSense with multi-agent VirtualHome simulation and checking the synthetic sensor streams against the CASAS Cairo and Kyoto datasets.</li>
-          <li>Reimplemented two published LLM-based methods, LAHAR and MICAR, in Python and ran them end to end on the ARAS and MARBLE datasets.</li>
-          <li>Profiled five public smart-home datasets (Cairo, Kyoto, MuRAL, MARBLE, ARAS) to see what each one can and can't tell you about who triggered a sensor.</li>
+          <li>Thesis on multi-resident human activity recognition: extending AgentSense with multi-agent VirtualHome simulation, with the CASAS Cairo and Kyoto datasets as the real-world reference. Work in progress.</li>
+          <li>Reimplementing two published LLM-based methods, LAHAR and MICAR, in Python on the ARAS and MARBLE datasets.</li>
+          <li>Working across five public smart-home datasets: Cairo, Kyoto, MuRAL, MARBLE and ARAS.</li>
           <li>Now experimenting with AI Habitat: adding sensors to the environment and collecting data from several agents at once.</li>
         </ul>
       </div>
@@ -321,15 +321,15 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
       <article class="lead">
         <div class="status">MS thesis, in progress</div>
         <h3>Multi-resident activity recognition from simulated homes</h3>
-        <p>Real smart-home datasets rarely say which resident triggered which sensor, and labelling that by hand doesn't scale. I extend AgentSense with multi-agent VirtualHome simulation, where <strong>every sensor event comes out already tagged with the resident who caused it</strong>. The synthetic streams are validated against CASAS Cairo and Kyoto.</p>
-        <p>It grew out of an 8-stage pipeline that generated per-resident streams, merged them with coordination rules, and repaired anything physically impossible. I compared four variants of it using Jensen-Shannon divergence, constraint-violation rates, and a random forest trained to tell real windows from synthetic ones.</p>
+        <p>Real smart-home datasets rarely say which resident triggered which sensor, and labelling that by hand doesn't scale. I extend AgentSense with multi-agent VirtualHome simulation, where <strong>every sensor event comes out already tagged with the resident who caused it</strong>. The plan is to validate the synthetic streams against the CASAS Cairo and Kyoto datasets.</p>
+        <p>The work is ongoing, so results will come with the thesis. It grew out of an earlier 8-stage pipeline that generated per-resident sensor streams, merged them with coordination rules, and repaired anything physically impossible.</p>
         <div class="stack">Python / VirtualHome / AI Habitat / CASAS / scikit-learn / Pandas</div>
       </article>
 
       <article class="half">
         <div class="kind">Research reproduction</div>
         <h3>Reproducing LAHAR and MICAR</h3>
-        <p>Working Python reimplementations of two LLM-based multi-resident methods, LAHAR on ARAS and MICAR on MARBLE, with real inference runs on Gemini. I wrote up the bugs I hit along the way, and a finding about evaluation: when one class such as sleeping dominates the ground truth, weighted F1 stops telling you much about the model.</p>
+        <p>Python reimplementations of two LLM-based multi-resident methods, LAHAR on the ARAS dataset and MICAR on MARBLE, running end to end with Gemini. Rebuilding them is how I learn where existing approaches hold up and where they don't. Part of the thesis, still in progress.</p>
         <div class="stack">Python / Gemini API / ARAS / MARBLE</div>
       </article>
 
