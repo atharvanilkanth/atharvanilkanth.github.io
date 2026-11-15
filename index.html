@@ -23,6 +23,7 @@
   --panel-ink:#EDF1F6;
   --panel-soft:#B4BED8;
   --panel-accent:#F0A30A;
+  --panel-r1:#8FA3FF;
   --display:'Bricolage Grotesque',system-ui,sans-serif;
   --data:'Martian Mono',ui-monospace,SFMono-Regular,Menlo,monospace;
   --wall:1.5px;
@@ -41,6 +42,7 @@
     --panel-ink:#0B1330;
     --panel-soft:#3B4770;
     --panel-accent:#8A5A00;
+    --panel-r1:#2747E8;
   }
 }
 *{margin:0;padding:0;box-sizing:border-box}
@@ -172,6 +174,24 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cobalt);outline-off
 .projects .kind{font-size:14px;color:var(--slate);margin-bottom:8px}
 .stack{margin-top:16px;font-family:var(--data);font-size:11.5px;line-height:1.9;color:var(--slate)}
 .projects .lead .stack{color:var(--panel-soft)}
+/* project figures: drawn in the floor plan's line style */
+.fig{margin:-26px -26px 22px;padding:16px 18px;background:var(--daylight);border-bottom:var(--wall) solid var(--midnight)}
+.fig svg{display:block;width:100%;height:auto}
+.fig .n{fill:var(--plaster);stroke:var(--midnight);stroke-width:1.5}
+.fig .n.me{fill:color-mix(in srgb,var(--cobalt) 14%,var(--plaster))}
+.fig .w{fill:none;stroke:var(--midnight);stroke-width:1.5}
+.fig .h{fill:var(--midnight)}
+.fig text{font-family:var(--display);font-size:12.5px;font-weight:600;fill:var(--midnight)}
+.fig text.s{font-size:11.5px;font-weight:400;fill:var(--slate)}
+.fig .c1{fill:var(--cobalt)}
+.fig .c2{fill:var(--saffron)}
+.fig .u{fill:var(--slate);opacity:.55}
+.fig .bar{fill:var(--slate);opacity:.45}
+.fig .track{fill:var(--hair)}
+.projects .lead{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:44px;align-items:center}
+.projects .lead .fig{margin:0;padding:0;border:0;background:none;
+  --midnight:var(--panel-ink);--slate:var(--panel-soft);--plaster:transparent;--cobalt:var(--panel-r1);--saffron:var(--panel-accent)}
+@media(max-width:900px){.projects .lead{grid-template-columns:1fr;gap:28px}.projects .lead .fig{max-width:340px}}
 .more{margin-top:22px;color:var(--slate)}
 
 .skills{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -319,14 +339,18 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
 
     <div class="rooms projects">
       <article class="lead">
+        <div>
         <div class="status">MS thesis, in progress</div>
         <h3>Multi-resident activity recognition from simulated homes</h3>
         <p>Real smart-home datasets rarely say which resident triggered which sensor, and labelling that by hand doesn't scale. I extend AgentSense with multi-agent VirtualHome simulation, where <strong>every sensor event comes out already tagged with the resident who caused it</strong>. The plan is to validate the synthetic streams against the CASAS Cairo and Kyoto datasets.</p>
         <p>The work is ongoing, so results will come with the thesis. It grew out of an earlier 8-stage pipeline that generated per-resident sensor streams, merged them with coordination rules, and repaired anything physically impossible.</p>
         <div class="stack">Python / VirtualHome / AI Habitat / CASAS / scikit-learn / Pandas</div>
+        </div>
+        <div class="fig"><svg viewBox="0 0 300 228" role="img" aria-label="Two simulated residents each produce sensor events; merged into one log, every event keeps the resident who caused it."><text class="s" x="10" y="18">Simulated resident 1</text><path class="w" d="M10 34H290"/><circle class="c1" cx="40" cy="34" r="5.5"/><circle class="c1" cx="95" cy="34" r="5.5"/><circle class="c1" cx="170" cy="34" r="5.5"/><circle class="c1" cx="240" cy="34" r="5.5"/><text class="s" x="10" y="68">Simulated resident 2</text><path class="w" d="M10 84H290"/><circle class="c2" cx="65" cy="84" r="5.5"/><circle class="c2" cx="130" cy="84" r="5.5"/><circle class="c2" cx="205" cy="84" r="5.5"/><circle class="c2" cx="265" cy="84" r="5.5"/><path class="w" d="M150 100V129"/><polygon class="h" points="150,134 146.5,128 153.5,128"/><text class="s" x="162" y="121">merge</text><rect class="n" x="10" y="140" width="280" height="78"/><text x="24" y="162">Sensor log</text><path class="w" d="M24 182H276"/><circle class="c1" cx="40" cy="182" r="5.5"/><circle class="c1" cx="95" cy="182" r="5.5"/><circle class="c1" cx="170" cy="182" r="5.5"/><circle class="c1" cx="240" cy="182" r="5.5"/><circle class="c2" cx="65" cy="182" r="5.5"/><circle class="c2" cx="130" cy="182" r="5.5"/><circle class="c2" cx="205" cy="182" r="5.5"/><circle class="c2" cx="265" cy="182" r="5.5"/><text class="s" x="24" y="205">every event keeps its resident</text></svg></div>
       </article>
 
       <article class="half">
+        <div class="fig"><svg viewBox="0 0 440 140" role="img" aria-label="An unlabelled sensor log goes into an LLM, which assigns an activity to each resident."><rect class="n" x="20" y="26" width="110" height="84"/><text class="s" x="75.0" y="125" text-anchor="middle">sensor log, no names</text><circle class="u" cx="34" cy="42" r="3.5"/><rect class="bar" x="44" y="39" width="58" height="6"/><circle class="u" cx="34" cy="59" r="3.5"/><rect class="bar" x="44" y="56" width="44" height="6"/><circle class="u" cx="34" cy="76" r="3.5"/><rect class="bar" x="44" y="73" width="64" height="6"/><circle class="u" cx="34" cy="93" r="3.5"/><rect class="bar" x="44" y="90" width="50" height="6"/><path class="w" d="M130 68H153"/><polygon class="h" points="158,68 152,64.5 152,71.5"/><rect class="n" x="158" y="51" width="60" height="34"/><text x="188.0" y="72.5" text-anchor="middle">LLM</text><path class="w" d="M218 68H232M232 45V91"/><path class="w" d="M232 45H241"/><polygon class="h" points="246,45 240,41.5 240,48.5"/><path class="w" d="M232 91H241"/><polygon class="h" points="246,91 240,87.5 240,94.5"/><rect class="n" x="246" y="28" width="174" height="34"/><circle class="c1" cx="263" cy="45" r="5"/><text x="276" y="49.5">Resident 1: activity</text><rect class="n" x="246" y="74" width="174" height="34"/><circle class="c2" cx="263" cy="91" r="5"/><text x="276" y="95.5">Resident 2: activity</text></svg></div>
         <div class="kind">Research reproduction</div>
         <h3>Reproducing LAHAR and MICAR</h3>
         <p>Python reimplementations of two LLM-based multi-resident methods, LAHAR on the ARAS dataset and MICAR on MARBLE, running end to end with Gemini. Rebuilding them is how I learn where existing approaches hold up and where they don't. Part of the thesis, still in progress.</p>
@@ -334,6 +358,7 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
       </article>
 
       <article class="half">
+        <div class="fig"><svg viewBox="0 0 440 140" role="img" aria-label="Pipeline: email, OCR, field extraction, verification, human approval, filled PDF."><rect class="n" x="6" y="50" width="58" height="34"/><text x="35.0" y="71.5" text-anchor="middle">Email</text><text class="s" x="35.0" y="99" text-anchor="middle">inbox</text><path class="w" d="M64 67H75"/><polygon class="h" points="80,67 74,63.5 74,70.5"/><rect class="n" x="80" y="50" width="58" height="34"/><text x="109.0" y="71.5" text-anchor="middle">OCR</text><text class="s" x="109.0" y="99" text-anchor="middle">Azure DI</text><path class="w" d="M138 67H149"/><polygon class="h" points="154,67 148,63.5 148,70.5"/><rect class="n" x="154" y="50" width="58" height="34"/><text x="183.0" y="71.5" text-anchor="middle">Extract</text><text class="s" x="183.0" y="99" text-anchor="middle">16 fields</text><path class="w" d="M212 67H223"/><polygon class="h" points="228,67 222,63.5 222,70.5"/><rect class="n" x="228" y="50" width="58" height="34"/><text x="257.0" y="71.5" text-anchor="middle">Verify</text><text class="s" x="257.0" y="99" text-anchor="middle">flags gaps</text><path class="w" d="M286 67H297"/><polygon class="h" points="302,67 296,63.5 296,70.5"/><rect class="n" x="302" y="50" width="58" height="34"/><text x="331.0" y="71.5" text-anchor="middle">Approve</text><text class="s" x="331.0" y="99" text-anchor="middle">a person</text><path class="w" d="M360 67H371"/><polygon class="h" points="376,67 370,63.5 370,70.5"/><circle class="c1" cx="331" cy="36" r="5"/><rect class="n" x="376" y="50" width="58" height="34"/><text x="405.0" y="71.5" text-anchor="middle">PDF</text><text class="s" x="405.0" y="99" text-anchor="middle">filled form</text></svg></div>
         <div class="kind">Applied AI, healthcare</div>
         <h3>Document automation for a medical practice</h3>
         <p>Scanned patient paperwork arrives by email. Azure Document Intelligence reads it, an LLM pulls out 16 fields, a verification step flags anything missing or inconsistent, and a person approves before the filled PDF goes out. Designed around HIPAA requirements from the first diagram.</p>
@@ -341,6 +366,7 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
       </article>
 
       <article class="half">
+        <div class="fig"><svg viewBox="0 0 440 140" role="img" aria-label="Flow: organiser form, review queue, staff approval, then automatic reminders and thank-yous."><rect class="n" x="10" y="53" width="60" height="34"/><text x="40.0" y="74.5" text-anchor="middle">Form</text><text class="s" x="40.0" y="102" text-anchor="middle">organisers</text><path class="w" d="M70 70H85"/><polygon class="h" points="90,70 84,66.5 84,73.5"/><rect class="n" x="90" y="53" width="104" height="34"/><text x="142.0" y="74.5" text-anchor="middle">Review queue</text><text class="s" x="142.0" y="102" text-anchor="middle">SharePoint list</text><path class="w" d="M194 70H209"/><polygon class="h" points="214,70 208,66.5 208,73.5"/><rect class="n" x="214" y="53" width="72" height="34"/><text x="250.0" y="74.5" text-anchor="middle">Approve</text><text class="s" x="250.0" y="102" text-anchor="middle">staff</text><circle class="c1" cx="250" cy="39" r="5"/><path class="w" d="M286 70H304M304 38V102"/><path class="w" d="M304 38H317"/><polygon class="h" points="322,38 316,34.5 316,41.5"/><path class="w" d="M304 102H317"/><polygon class="h" points="322,102 316,98.5 316,105.5"/><rect class="n" x="322" y="21" width="104" height="34"/><text x="374.0" y="42.5" text-anchor="middle">Reminders</text><rect class="n" x="322" y="85" width="104" height="34"/><text x="374.0" y="106.5" text-anchor="middle">Thank-yous</text></svg></div>
         <div class="kind">Workflow automation, University of Georgia</div>
         <h3>International Education Month automation</h3>
         <p>The system UGA's Global Student Engagement office uses to run a month of events. Organisers submit an event through a form, it lands in a SharePoint review queue, staff approve it, and reminders and post-event thank-yous go out on their own. It replaced coordination that used to happen by email across 5+ staff roles.</p>
@@ -348,6 +374,7 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
       </article>
 
       <article class="half">
+        <div class="fig"><svg viewBox="0 0 440 140" role="img" aria-label="A question goes to an agent that routes it to vector search or a graph query before a local model answers."><rect class="n" x="8" y="53" width="76" height="34"/><text x="46.0" y="74.5" text-anchor="middle">Question</text><path class="w" d="M84 70H97"/><polygon class="h" points="102,70 96,66.5 96,73.5"/><rect class="n" x="102" y="53" width="62" height="34"/><text x="133.0" y="74.5" text-anchor="middle">Agent</text><text class="s" x="133.0" y="102" text-anchor="middle">picks a route</text><path class="w" d="M164 70H178M178 38V102"/><path class="w" d="M178 38H187"/><polygon class="h" points="192,38 186,34.5 186,41.5"/><path class="w" d="M178 102H187"/><polygon class="h" points="192,102 186,98.5 186,105.5"/><rect class="n" x="192" y="21" width="112" height="34"/><text x="248.0" y="42.5" text-anchor="middle">Vector search</text><text class="s" x="248.0" y="70" text-anchor="middle">Qdrant, SigLIP</text><rect class="n" x="192" y="85" width="112" height="34"/><text x="248.0" y="106.5" text-anchor="middle">Graph</text><text class="s" x="248.0" y="134" text-anchor="middle">Neo4j</text><path class="w" d="M304 38H320"/><path class="w" d="M304 102H320"/><path class="w" d="M320 38V102"/><path class="w" d="M320 70H333"/><polygon class="h" points="338,70 332,66.5 332,73.5"/><rect class="n" x="338" y="53" width="70" height="34"/><text x="373.0" y="74.5" text-anchor="middle">Answer</text><text class="s" x="373.0" y="102" text-anchor="middle">Ollama</text></svg></div>
         <div class="kind">LLM systems</div>
         <h3>Agentic multimodal RAG</h3>
         <p>A retrieval system where an agent chooses how to answer: vector search in Qdrant over SigLIP image and text embeddings, a Neo4j graph for relationships, and local models through Ollama.</p>
@@ -355,6 +382,7 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
       </article>
 
       <article class="half">
+        <div class="fig"><svg viewBox="0 0 440 140" role="img" aria-label="A file is turned into features, scored by three classifiers in parallel, and given a verdict."><rect class="n" x="22" y="53" width="50" height="34"/><text x="47.0" y="74.5" text-anchor="middle">File</text><path class="w" d="M72 70H85"/><polygon class="h" points="90,70 84,66.5 84,73.5"/><rect class="n" x="90" y="53" width="84" height="34"/><text x="132.0" y="74.5" text-anchor="middle">Features</text><text class="s" x="132.0" y="102" text-anchor="middle">PE, opcodes</text><path class="w" d="M174 70H190M190 28V112"/><path class="w" d="M190 28H199"/><polygon class="h" points="204,28 198,24.5 198,31.5"/><path class="w" d="M190 70H199"/><polygon class="h" points="204,70 198,66.5 198,73.5"/><path class="w" d="M190 112H199"/><polygon class="h" points="204,112 198,108.5 198,115.5"/><rect class="n" x="204" y="14" width="112" height="28"/><text x="260.0" y="32.5" text-anchor="middle">XGBoost</text><rect class="n" x="204" y="56" width="112" height="28"/><text x="260.0" y="74.5" text-anchor="middle">Random forest</text><rect class="n" x="204" y="98" width="112" height="28"/><text x="260.0" y="116.5" text-anchor="middle">SVM</text><path class="w" d="M316 28H330"/><path class="w" d="M316 70H330"/><path class="w" d="M316 112H330"/><path class="w" d="M330 28V112"/><path class="w" d="M330 70H341"/><polygon class="h" points="346,70 340,66.5 340,73.5"/><rect class="n" x="346" y="53" width="72" height="34"/><text x="382.0" y="74.5" text-anchor="middle">Verdict</text></svg></div>
         <div class="kind">Full-stack ML</div>
         <h3>Malware classification system</h3>
         <p>A Django backend and REST API serving XGBoost, random forest and SVM classifiers over PE headers and opcode patterns, compared head to head and covered by unit and integration tests.</p>
@@ -362,6 +390,7 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
       </article>
 
       <article class="half">
+        <div class="fig"><svg viewBox="0 0 440 140" role="img" aria-label="A short chat conversation feeds a weighted score across three phenotype types."><rect class="n" x="16" y="14" width="150" height="30"/><rect class="bar" x="28" y="26" width="96" height="6"/><rect class="n me" x="76" y="56" width="150" height="30"/><rect class="bar" x="88" y="68" width="110" height="6"/><rect class="n" x="16" y="98" width="112" height="30"/><rect class="bar" x="28" y="110" width="70" height="6"/><path class="w" d="M238 71H257"/><polygon class="h" points="262,71 256,67.5 256,74.5"/><text x="272" y="44.5">Vata</text><rect class="track" x="320" y="35" width="104" height="10"/><rect class="bar" x="320" y="35" width="62" height="10"/><text x="272" y="74.5">Pitta</text><rect class="track" x="320" y="65" width="104" height="10"/><rect class="bar" x="320" y="65" width="34" height="10"/><text x="272" y="104.5">Kapha</text><rect class="track" x="320" y="95" width="104" height="10"/><rect class="c1" x="320" y="95" width="92" height="10"/><text class="s" x="348" y="128" text-anchor="middle">weighted score (illustrative)</text></svg></div>
         <div class="kind">NLP</div>
         <h3>Phenotype assessment chatbot</h3>
         <p>A RASA chatbot for Ayurvedic phenotype assessment, with TF-IDF intent classification, weighted scoring and retrieval-backed answers. It cut assessment time by 75%.</p>
