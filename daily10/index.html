@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily 10 PCM Practice</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,750&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  window.__mjPending = new Set();
+  window.MathJax = {
+    tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] },
+    svg: { fontCache: 'global' },
+    options: { enableMenu: false },
+    startup: {
+      typeset: false,
+      pageReady() {
+        return MathJax.startup.defaultPageReady().then(() => {
+          const els = [...window.__mjPending].filter(e => e.isConnected);
+          window.__mjPending.clear();
+          if (els.length) return MathJax.typesetPromise(els).catch(() => {});
+        });
+      }
+    }
+  };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-svg.js" async></script>
+<script src="config.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<style>
+/* Layout idea: one calm study column — a question card that owns the screen, with a tight tab bar on top. Subjects carry their own colour everywhere. */
+:root {
+  --bg: #f3f4f7;
+  --surface: #ffffff;
+  --ink: #171a21;
+  --muted: #5c6373;
+  --line: #dfe2e9;
+  --accent: #3446c4;
+  --accent-soft: #e8ebfb;
+  --phy: #2463c8;
+  --che: #0b8560;
+  --mat: #c0420e;
+  --good: #167a3d;
+  --good-bg: #e6f4ea;
+  --bad: #c42b2b;
+  --bad-bg: #fcebeb;
+  --warn: #a35a06;
+  --warn-bg: #fdf3e2;
+  --display: 'Bricolage Grotesque', 'Segoe UI', system-ui, sans-serif;
+  --body: 'IBM Plex Sans', 'Segoe UI', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12141a; --surface: #1b1e26; --ink: #e9ebf1; --muted: #9aa1b1; --line: #2c303b;
+    --accent: #8b98ff; --accent-soft: #252b4d;
+    --phy: #6ea2ff; --che: #3fcf9b; --mat: #ff8a52;
+    --good: #57d08a; --good-bg: #173322; --bad: #ff7a7a; --bad-bg: #3a1c1e; --warn: #f0b35a; --warn-bg: #3a2c15;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12141a; --surface: #1b1e26; --ink: #e9ebf1; --muted: #9aa1b1; --line: #2c303b;
+  --accent: #8b98ff; --accent-soft: #252b4d;
+  --phy: #6ea2ff; --che: #3fcf9b; --mat: #ff8a52;
+  --good: #57d08a; --good-bg: #173322; --bad: #ff7a7a; --bad-bg: #3a1c1e; --warn: #f0b35a; --warn-bg: #3a2c15;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--ink); font: 400 16px/1.55 var(--body); }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap { max-width: 780px; margin: 0 auto; padding: 0 16px 64px; }
+.wrap.wide { max-width: 980px; }
+
+header.top { position: sticky; top: 0; z-index: 5; background: var(--bg); border-bottom: 1px solid var(--line); }
+.top-in { max-width: 980px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 16px; flex-wrap: wrap; }
+.brand { font-family: var(--display); font-weight: 750; font-size: 20px; letter-spacing: -0.01em; display: flex; align-items: baseline; gap: 6px; }
+.brand b { color: var(--accent); }
+.brand small { font: 500 12px var(--body); color: var(--muted); }
+nav.tabs { display: flex; gap: 4px; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+nav.tabs a { text-decoration: none; color: var(--muted); font-weight: 500; font-size: 14px; padding: 6px 12px; border-radius: 7px; display: flex; gap: 6px; align-items: center; }
+nav.tabs a[aria-current="page"] { background: var(--accent-soft); color: var(--accent); }
+nav.tabs .count { font: 500 11px var(--mono); background: var(--bad); color: #fff; border-radius: 99px; padding: 1px 6px; }
+.save { margin-left: auto; font-size: 12px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+.save i { width: 8px; height: 8px; border-radius: 50%; background: var(--good); display: inline-block; }
+.save.saving i { background: var(--warn); }
+.save.error i, .save.off i { background: var(--bad); }
+
+.banner { margin: 14px 0 0; padding: 10px 14px; border-radius: 10px; background: var(--warn-bg); color: var(--warn); font-size: 14px; }
+.banner:empty { display: none; }
+
+h1 { font-family: var(--display); font-weight: 750; font-size: 28px; letter-spacing: -0.015em; line-height: 1.15; margin: 24px 0 4px; text-wrap: balance; }
+h2 { font-family: var(--display); font-weight: 600; font-size: 19px; margin: 0 0 12px; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0 0 18px; font-size: 15px; }
+.muted { color: var(--muted); }
+.mono { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+.stack { display: grid; gap: 16px; }
+
+/* subject chips */
+.chip { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; letter-spacing: 0.02em; padding: 2px 9px; border-radius: 99px; border: 1px solid currentColor; white-space: nowrap; }
+.chip.P { color: var(--phy); } .chip.C { color: var(--che); } .chip.M { color: var(--mat); }
+.ch-name { font-size: 13px; color: var(--muted); }
+
+/* question card */
+.qhead { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.qnum { font-weight: 600; font-size: 14px; }
+.timer { margin-left: auto; font: 500 15px var(--mono); font-variant-numeric: tabular-nums; padding: 3px 10px; border-radius: 8px; background: var(--bg); border: 1px solid var(--line); }
+.timer.slow { color: var(--warn); border-color: var(--warn); }
+.dots { display: flex; gap: 5px; margin: 0 0 16px; }
+.dots span { flex: 1; height: 5px; border-radius: 3px; background: var(--line); }
+.dots span.ok { background: var(--good); } .dots span.no { background: var(--bad); } .dots span.cur { background: var(--accent); }
+.qtext { font-size: 17px; line-height: 1.65; margin: 0 0 18px; overflow-x: auto; }
+.opts { display: grid; gap: 10px; }
+.opt { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); cursor: pointer; min-height: 52px; overflow-x: auto; }
+.opt:hover:not(:disabled) { border-color: var(--accent); }
+.opt .k { flex: none; width: 28px; height: 28px; border-radius: 7px; display: grid; place-items: center; font: 600 13px var(--mono); background: var(--bg); border: 1px solid var(--line); }
+.opt.sel { border-color: var(--accent); background: var(--accent-soft); }
+.opt.sel .k { background: var(--accent); color: #fff; border-color: var(--accent); }
+.opt.right { border-color: var(--good); background: var(--good-bg); }
+.opt.right .k { background: var(--good); color: #fff; border-color: var(--good); }
+.opt.wrong { border-color: var(--bad); background: var(--bad-bg); }
+.opt.wrong .k { background: var(--bad); color: #fff; border-color: var(--bad); }
+.opt:disabled { cursor: default; }
+.numin { display: grid; gap: 6px; max-width: 280px; }
+.numin label { font-size: 14px; color: var(--muted); }
+.numin input { padding: 12px 14px; border-radius: 10px; border: 1.5px solid var(--line); background: var(--surface); font: 500 18px var(--mono); }
+.numin input:focus { border-color: var(--accent); outline: none; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; align-items: center; }
+.btn { border: 1.5px solid var(--line); background: var(--surface); border-radius: 10px; padding: 10px 16px; font-weight: 600; font-size: 15px; cursor: pointer; }
+.btn:hover:not(:disabled) { border-color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+.btn.primary:hover:not(:disabled) { filter: brightness(1.08); border-color: var(--accent); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.small { padding: 6px 11px; font-size: 13px; border-radius: 8px; }
+.hint { font-size: 12px; color: var(--muted); margin-left: auto; }
+
+.verdict { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; padding: 12px 14px; border-radius: 10px; margin-top: 18px; font-weight: 600; }
+.verdict.ok { background: var(--good-bg); color: var(--good); }
+.verdict.no { background: var(--bad-bg); color: var(--bad); }
+.verdict .mono { font-weight: 500; margin-left: auto; }
+.sol { margin-top: 12px; padding: 14px; border-left: 3px solid var(--accent); background: var(--bg); border-radius: 0 10px 10px 0; white-space: pre-line; overflow-x: auto; }
+.sol b { display: block; font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+.why { margin-top: 14px; }
+.why p { margin: 0 0 8px; font-size: 14px; font-weight: 600; }
+.pills { display: flex; gap: 8px; flex-wrap: wrap; }
+.pill { border: 1.5px solid var(--line); background: var(--surface); border-radius: 99px; padding: 6px 12px; font-size: 13px; cursor: pointer; }
+.pill[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+.flag[aria-pressed="true"] { border-color: var(--warn); background: var(--warn-bg); color: var(--warn); }
+
+/* summary */
+.score { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.score .big { font: 750 56px/1 var(--display); letter-spacing: -0.03em; }
+.score .of { font: 600 22px var(--display); color: var(--muted); }
+.rows { display: grid; }
+.row { display: grid; grid-template-columns: 28px auto 1fr auto auto; gap: 10px; align-items: center; padding: 9px 0; border-top: 1px solid var(--line); font-size: 14px; }
+.row:first-child { border-top: 0; }
+.mark { font-weight: 700; } .mark.ok { color: var(--good); } .mark.no { color: var(--bad); }
+
+/* tiles + dashboard */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; }
+.tile { background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.tile .lbl { font-size: 12px; color: var(--muted); font-weight: 500; letter-spacing: 0.03em; text-transform: uppercase; }
+.tile .val { font: 750 28px/1.2 var(--display); margin-top: 4px; font-variant-numeric: tabular-nums; }
+.tile .note { font-size: 13px; color: var(--muted); }
+.status { display: inline-block; font-size: 12px; font-weight: 600; padding: 2px 8px; border-radius: 99px; margin-top: 6px; }
+.status.done { background: var(--good-bg); color: var(--good); }
+.status.part { background: var(--warn-bg); color: var(--warn); }
+.status.none { background: var(--bad-bg); color: var(--bad); }
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 680px) { .two { grid-template-columns: 1fr; } }
+
+.cal { display: grid; grid-auto-flow: column; grid-template-rows: repeat(7, 14px); gap: 4px; overflow-x: auto; padding-bottom: 4px; }
+.cal span { width: 14px; height: 14px; border-radius: 3px; background: var(--line); }
+.cal span.done { background: var(--good); }
+.cal span.part { background: var(--warn); opacity: 0.75; }
+.cal span.fut { background: transparent; }
+.cal span.today { outline: 2px solid var(--accent); outline-offset: 1px; }
+.legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); margin-top: 10px; flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: -1px; }
+
+.bar { display: grid; grid-template-columns: 92px 1fr 72px; gap: 10px; align-items: center; font-size: 14px; margin: 8px 0; }
+.bar .track { height: 10px; background: var(--bg); border: 1px solid var(--line); border-radius: 99px; overflow: hidden; }
+.bar .fill { height: 100%; border-radius: 99px; }
+.bar .fill.P { background: var(--phy); } .bar .fill.C { background: var(--che); } .bar .fill.M { background: var(--mat); } .bar .fill.x { background: var(--accent); }
+.bar .pct { text-align: right; font-family: var(--mono); font-size: 13px; }
+
+.tbl-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
+th { text-align: left; font-size: 12px; font-weight: 600; color: var(--muted); letter-spacing: 0.03em; text-transform: uppercase; padding: 0 8px 8px 0; border-bottom: 1px solid var(--line); }
+td { padding: 9px 8px 9px 0; border-bottom: 1px solid var(--line); vertical-align: middle; }
+td.num, th.num { text-align: right; }
+.tag { font-size: 11px; font-weight: 600; padding: 1px 7px; border-radius: 99px; background: var(--bad-bg); color: var(--bad); margin-left: 6px; }
+.tag.warn { background: var(--warn-bg); color: var(--warn); }
+.tag.good { background: var(--good-bg); color: var(--good); }
+
+.mist { padding: 14px 0; border-top: 1px solid var(--line); display: grid; gap: 8px; }
+.mist:first-child { border-top: 0; padding-top: 0; }
+.mist .meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.mist .qt { font-size: 15px; overflow-x: auto; }
+.mist .ans { font-size: 14px; display: flex; gap: 16px; flex-wrap: wrap; }
+.mist .ans span b { font-weight: 600; }
+details summary { cursor: pointer; color: var(--accent); font-size: 14px; font-weight: 500; }
+details .sol { margin-top: 8px; }
+
+.logins { display: grid; gap: 6px; font-size: 14px; }
+.logins div { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+.empty { color: var(--muted); font-size: 14px; }
+select.pick { padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--surface); }
+textarea { width: 100%; min-height: 160px; padding: 12px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); font: 13px/1.5 var(--mono); }
+pre.ex { background: var(--bg); padding: 12px; border-radius: 10px; font: 12px/1.5 var(--mono); overflow-x: auto; margin: 8px 0 12px; white-space: pre; }
+.loading { padding: 40px 0; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .card.enter { animation: rise .25s ease-out; } @keyframes rise { from { transform: translateY(6px); opacity: .6; } to { transform: none; opacity: 1; } } }
+@media (max-width: 480px) { .row { grid-template-columns: 22px auto 1fr auto; } .row .rt { display: none; } .score .big { font-size: 44px; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-in">
+    <div class="brand">Daily <b>10</b> <small>PCM practice</small></div>
+    <nav class="tabs" aria-label="Sections">
+      <a href="#today" id="tab-today">Today</a>
+      <a href="#mistakes" id="tab-mistakes">Mistakes <span class="count" id="due-count" hidden></span></a>
+      <a href="#progress" id="tab-progress">Progress</a>
+    </nav>
+    <div class="save off" id="save"><i></i><span id="save-txt">Connecting…</span> <button class="btn small" id="signout" type="button" hidden>Sign out</button></div>
+  </div>
+</header>
+<div class="wrap" id="wrap">
+  <div class="banner" id="banner" role="status"></div>
+  <main id="main"><p class="loading">Loading questions…</p></main>
+</div>
+
+<script>
+'use strict';
+/* ---------- helpers ---------- */
+const IST = 'Asia/Kolkata';
+const keyFmt = new Intl.DateTimeFormat('en-CA', { timeZone: IST, year: 'numeric', month: '2-digit', day: '2-digit' });
+const timeFmt = new Intl.DateTimeFormat('en-IN', { timeZone: IST, hour: 'numeric', minute: '2-digit', hour12: true });
+const longDateFmt = new Intl.DateTimeFormat('en-IN', { timeZone: 'UTC', weekday: 'long', day: 'numeric', month: 'long' });
+const shortDateFmt = new Intl.DateTimeFormat('en-IN', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' });
+const dayKey = (ts = Date.now()) => keyFmt.format(new Date(ts));
+const keyDate = k => new Date(k + 'T00:00:00Z');
+const addDays = (k, n) => { const d = keyDate(k); d.setUTCDate(d.getUTCDate() + n); return d.toISOString().slice(0, 10); };
+const diffDays = (a, b) => Math.round((keyDate(b) - keyDate(a)) / 864e5);
+const fmtLong = k => longDateFmt.format(keyDate(k));
+const fmtShort = k => shortDateFmt.format(keyDate(k));
+const fmtTime = ts => timeFmt.format(new Date(ts)) + ' IST';
+const fmtSec = s => { s = Math.max(0, Math.round(s || 0)); const m = Math.floor(s / 60); return m ? `${m}m ${String(s % 60).padStart(2, '0')}s` : `${s}s`; };
+const clock = s => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+const pct = (a, b) => b ? Math.round(100 * a / b) : 0;
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const SUBJ = { P: 'Physics', C: 'Chemistry', M: 'Maths' };
+const REASONS = { concept: "Didn't know the concept", calc: 'Calculation slip', misread: 'Misread the question', guess: 'Guessed' };
+const SLOW = 240, RUSHED = 20;
+
+function h(tag, props, ...kids) {
+  const el = document.createElement(tag);
+  for (const [k, v] of Object.entries(props || {})) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(Infinity)) { if (c == null || c === false) continue; el.append(c instanceof Node ? c : String(c)); }
+  return el;
+}
+function typeset(el) {
+  if (window.MathJax && MathJax.typesetPromise) MathJax.typesetPromise([el]).catch(() => {});
+  else window.__mjPending.add(el);
+}
+function hashStr(s) { let h1 = 1779033703 ^ s.length; for (let i = 0; i < s.length; i++) { h1 = Math.imul(h1 ^ s.charCodeAt(i), 3432918353); h1 = (h1 << 13) | (h1 >>> 19); } return h1 >>> 0; }
+function rng(seed) { let a = seed; return () => { a |= 0; a = (a + 0x6D2B79F5) | 0; let t = Math.imul(a ^ (a >>> 15), 1 | a); t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t; return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+function shuffle(arr, r) { for (let i = arr.length - 1; i > 0; i--) { const j = Math.floor(r() * (i + 1)); [arr[i], arr[j]] = [arr[j], arr[i]]; } return arr; }
+const withTimeout = (p, ms) => Promise.race([p, new Promise((_, rej) => setTimeout(() => rej({ code: 'timeout' }), ms))]);
+const safeSeg = s => String(s).replace(/[^A-Za-z0-9_\-.~:@+]/g, '_').slice(0, 120);
+
+/* ---------- state ---------- */
+const S = {
+  bank: [], byId: {}, db: null, user: null, uid: 'local', isOwner: false, readOnly: false,
+  myDays: {}, today: null, session: null, sess: { daily: null, review: null }, logins: [], mem: new Map(), writeChain: Promise.resolve(),
+  dash: null, dashPick: null
+};
+
+/* ---------- storage (shared db, or in-memory when unavailable) ---------- */
+const store = {
+  async get(path) {
+    if (S.db) { const s = await S.db.doc(path).get(); return s.exists ? structuredClone(s.data()) : null; }
+    return S.mem.has(path) ? structuredClone(S.mem.get(path)) : null;
+  },
+  async set(path, data) {
+    if (S.db) return S.db.doc(path).set(data);
+    S.mem.set(path, structuredClone(data));
+  },
+  async query(coll, field, value) {
+    if (S.db) {
+      let q = S.db.collection(coll); if (field) q = q.where(field, '==', value);
+      const s = await q.get(); return s.docs.map(d => ({ _id: d.id, ...structuredClone(d.data()) }));
+    }
+    return [...S.mem.entries()].filter(([k, v]) => k.startsWith(coll + '/') && (!field || v[field] === value)).map(([k, v]) => ({ _id: k.split('/')[1], ...structuredClone(v) }));
+  }
+};
+function setSave(state, text) {
+  const el = document.getElementById('save'); el.className = 'save ' + state;
+  document.getElementById('save-txt').textContent = text;
+}
+function banner(msg) { document.getElementById('banner').textContent = msg || ''; }
+function persist(path, data) {
+  if (S.readOnly) return Promise.resolve();
+  const snap = JSON.parse(JSON.stringify(data));
+  if (S.db) setSave('saving', 'Saving…');
+  S.writeChain = S.writeChain.then(async () => {
+    try { await store.set(path, snap); }
+    catch (e) {
+      if (e && e.code === 'unavailable') { await sleep(400 + Math.random() * 800); try { await store.set(path, snap); if (S.db) setSave('', 'Saved'); return; } catch (e2) { e = e2; } }
+      if (e && (e.code === 'invalid_argument' || e.code === 'permission-denied')) { S.readOnly = true; banner("Your answers can't be saved right now. Sign out, sign in again with Google, and reload."); setSave('error', 'Not saved'); return; }
+      if (e && (e.code === 'quota_exceeded' || e.code === 'resource-exhausted')) { banner('Storage for this page is full, so new answers are not being saved.'); setSave('error', 'Not saved'); return; }
+      banner("Couldn't save the last answer. Check your internet connection; the next answer will try again."); setSave('error', 'Not saved'); return;
+    }
+    if (S.db) setSave('', 'Saved');
+  });
+  return S.writeChain;
+}
+function saveDay(day) { const { _id, ...data } = day; return persist('days/' + _id, data); }
+
+/* ---------- history & scheduling ---------- */
+function allAttempts(days) {
+  const out = [];
+  for (const d of Object.values(days)) {
+    for (const a of d.answers || []) out.push({ ...a, date: d.date, kind: 'daily' });
+    for (const a of d.reviews || []) out.push({ ...a, date: d.date, kind: 'review' });
+  }
+  return out.sort((x, y) => (x.at || 0) - (y.at || 0));
+}
+function dailyAttempts(days) { return allAttempts(days).filter(a => a.kind === 'daily'); }
+function chapterStats(attempts) {
+  const m = {};
+  for (const a of attempts) {
+    const q = S.byId[a.qid]; if (!q) continue;
+    const k = q.s + '|' + q.ch; const r = m[k] || (m[k] = { s: q.s, ch: q.ch, n: 0, ok: 0, sec: 0 });
+    r.n++; if (a.ok) r.ok++; r.sec += a.sec || 0;
+  }
+  return m;
+}
+function notebook(days, todayKey) {
+  const by = {};
+  for (const a of allAttempts(days)) (by[a.qid] || (by[a.qid] = [])).push(a);
+  const items = [];
+  for (const [qid, list] of Object.entries(by)) {
+    if (!S.byId[qid]) continue;
+    let lastWrong = -1; list.forEach((a, i) => { if (!a.ok) lastWrong = i; });
+    if (lastWrong < 0) continue;
+    const streak = list.length - 1 - lastWrong;
+    const last = list[list.length - 1];
+    const firstWrong = list.find(a => !a.ok);
+    const mastered = streak >= 2;
+    const due = mastered ? null : addDays(last.date, streak === 0 ? 3 : 7);
+    items.push({ qid, list, last, firstWrong, streak, mastered, due, isDue: !mastered && diffDays(due, todayKey) >= 0 });
+  }
+  return items;
+}
+function buildDailySet(dateKey) {
+  const att = allAttempts(S.myDays);
+  const seen = new Set(att.map(a => a.qid));
+  const stats = chapterStats(att.filter(a => a.kind === 'daily'));
+  const weak = new Set(Object.entries(stats).filter(([, v]) => v.n >= 2 && v.ok / v.n < 0.6).map(([k]) => k));
+  const r = rng(hashStr(dateKey + '|' + S.uid));
+  const dayIdx = Math.floor(keyDate(dateKey) / 864e5);
+  const counts = { P: 3, C: 3, M: 3 }; counts[['P', 'C', 'M'][dayIdx % 3]] = 4;
+  const picks = {};
+  for (const s of ['P', 'C', 'M']) {
+    const fresh = shuffle(S.bank.filter(q => q.s === s && !seen.has(q.id)), r);
+    const old = shuffle(S.bank.filter(q => q.s === s && seen.has(q.id)), r);
+    const pool = fresh.length >= counts[s] ? fresh : fresh.concat(old);
+    const want = counts[s], chosen = [], used = new Set();
+    const nWeak = Math.min(2, Math.round(want * 0.4));
+    for (const q of pool) if (chosen.length < nWeak && weak.has(q.s + '|' + q.ch) && !used.has(q.ch)) { chosen.push(q); used.add(q.ch); }
+    for (const q of pool) if (chosen.length < want && !chosen.includes(q) && !used.has(q.ch)) { chosen.push(q); used.add(q.ch); }
+    for (const q of pool) if (chosen.length < want && !chosen.includes(q)) chosen.push(q);
+    picks[s] = chosen;
+  }
+  const order = [];
+  for (let i = 0; order.length < 10 && i < 10; i++) for (const s of ['P', 'C', 'M']) if (picks[s][i] && order.length < 10) order.push(picks[s][i].id);
+  return order;
+}
+function isDone(d) { return d && d.qids && d.qids.length && (d.answers || []).length >= d.qids.length; }
+function streakOf(days, todayKey) {
+  let k = isDone(days[todayKey]) ? todayKey : addDays(todayKey, -1), n = 0;
+  while (isDone(days[k])) { n++; k = addDays(k, -1); }
+  return n;
+}
+
+/* ---------- sessions ---------- */
+function startSession(kind, qids) {
+  S.sess[kind] = S.session = { kind, qids, i: kind === 'daily' ? (S.today.answers || []).length : 0, phase: 'ask', choice: null, elapsed: 0, since: document.hidden ? null : Date.now(), last: null, results: [] };
+}
+function activeSec() { const s = S.session; return Math.round((s.elapsed + (s.since ? Date.now() - s.since : 0)) / 1000); }
+document.addEventListener('visibilitychange', () => {
+  const s = S.session; if (!s || s.phase !== 'ask') return;
+  if (document.hidden) { if (s.since) { s.elapsed += Date.now() - s.since; s.since = null; } }
+  else if (!s.since) s.since = Date.now();
+});
+setInterval(() => {
+  const el = document.getElementById('timer'); if (!el || !S.session || S.session.phase !== 'ask') return;
+  const t = activeSec(); el.textContent = clock(t); el.classList.toggle('slow', t > SLOW);
+}, 1000);
+
+function checkAnswer(q, given) {
+  if (given == null) return false;
+  if (q.type === 'mcq') return given === q.a;
+  const v = Number(String(given).trim()); return Number.isFinite(v) && Math.abs(v - Number(q.a)) <= 0.01;
+}
+function submit(skip) {
+  const s = S.session; const q = S.byId[s.qids[s.i]];
+  let given = skip ? null : s.choice;
+  if (!skip && q.type === 'int') { const v = (document.getElementById('numans') || {}).value; given = v == null || v.trim() === '' ? null : v.trim(); if (given == null) return; }
+  if (!skip && given == null) return;
+  const sec = activeSec();
+  const rec = { qid: q.id, given, ok: checkAnswer(q, given), sec, at: Date.now(), reason: null, doubt: false, skipped: !!skip };
+  if (s.kind === 'daily') {
+    S.today.answers = S.today.answers || []; S.today.answers.push(rec);
+    if (S.today.answers.length >= S.today.qids.length) S.today.finishedAt = Date.now();
+  } else { S.today.reviews = S.today.reviews || []; S.today.reviews.push(rec); s.results.push(rec); }
+  saveDay(S.today);
+  s.last = rec; s.phase = 'result';
+  render();
+}
+function updateLast(patch) {
+  const s = S.session; Object.assign(s.last, patch);
+  saveDay(S.today); render();
+}
+function next() {
+  const s = S.session; s.i++; s.phase = 'ask'; s.choice = null; s.last = null; s.elapsed = 0; s.since = document.hidden ? null : Date.now();
+  if (s.i >= s.qids.length) { s.phase = 'done'; if (s.kind === 'daily') S.sess.daily = S.session = null; }
+  render();
+  window.scrollTo(0, 0);
+}
+document.addEventListener('keydown', e => {
+  const s = S.session; if (!s || e.metaKey || e.ctrlKey || e.altKey) return;
+  const tag = (e.target.tagName || '').toLowerCase();
+  if (tag === 'textarea' || tag === 'select') return;
+  const q = S.byId[s.qids[s.i]]; if (!q) return;
+  if (s.phase === 'ask' && q.type === 'mcq' && tag !== 'input') {
+    const k = e.key.toLowerCase(); const idx = 'abcd'.indexOf(k) >= 0 ? 'abcd'.indexOf(k) : '1234'.indexOf(k);
+    if (idx >= 0 && k.length === 1) { s.choice = idx; render(); e.preventDefault(); return; }
+  }
+  if (e.key === 'Enter') {
+    if (s.phase === 'ask' && (q.type === 'int' || s.choice != null)) { e.preventDefault(); submit(false); }
+    else if (s.phase === 'result' && tag !== 'button') { e.preventDefault(); next(); }
+  }
+});
+
+/* ---------- views ---------- */
+function chip(s) { return h('span', { class: 'chip ' + s }, SUBJ[s] || s); }
+function answerText(q, given) {
+  if (given == null) return 'Skipped';
+  if (q.type === 'mcq') return `(${'ABCD'[given]}) ${q.o[given]}`;
+  return String(given);
+}
+function correctText(q) { return q.type === 'mcq' ? `(${'ABCD'[q.a]}) ${q.o[q.a]}` : String(q.a); }
+
+function questionCard() {
+  const s = S.session; const q = S.byId[s.qids[s.i]];
+  const total = s.qids.length;
+  const results = s.kind === 'daily' ? (S.today.answers || []) : s.results;
+  const dots = h('div', { class: 'dots', 'aria-hidden': 'true' }, s.qids.map((_, i) => h('span', { class: i < results.length ? (results[i].ok ? 'ok' : 'no') : (i === s.i ? 'cur' : '') })));
+  const head = h('div', { class: 'qhead' },
+    h('span', { class: 'qnum' }, `${s.kind === 'daily' ? 'Question' : 'Review'} ${s.i + 1} of ${total}`),
+    chip(q.s), h('span', { class: 'ch-name' }, q.ch),
+    s.phase === 'ask' ? h('span', { class: 'timer', id: 'timer', 'aria-label': 'Time on this question' }, clock(activeSec())) : h('span', { class: 'timer' }, fmtSec(s.last.sec)));
+  const card = h('section', { class: 'card enter', 'aria-live': 'polite' }, head, dots, h('div', { class: 'qtext' }, q.q));
+
+  if (q.type === 'mcq') {
+    const opts = h('div', { class: 'opts', role: 'group', 'aria-label': 'Options' });
+    q.o.forEach((o, i) => {
+      let cls = 'opt';
+      if (s.phase === 'ask' && s.choice === i) cls += ' sel';
+      if (s.phase === 'result') { if (i === q.a) cls += ' right'; else if (s.last.given === i) cls += ' wrong'; }
+      opts.append(h('button', { class: cls, type: 'button', disabled: s.phase !== 'ask', 'aria-pressed': s.choice === i ? 'true' : 'false', onclick: () => { s.choice = i; render(); } }, h('span', { class: 'k' }, 'ABCD'[i]), h('span', null, o)));
+    });
+    card.append(opts);
+  } else {
+    const inp = h('input', { id: 'numans', type: 'text', inputmode: 'decimal', autocomplete: 'off', placeholder: 'e.g. 12', disabled: s.phase !== 'ask' });
+    if (s.phase === 'result') inp.value = s.last.given ?? '';
+    card.append(h('div', { class: 'numin' }, h('label', { for: 'numans' }, 'Numerical answer — type a number'), inp));
+    if (s.phase === 'ask') setTimeout(() => inp.focus({ preventScroll: true }), 0);
+  }
+
+  if (s.phase === 'ask') {
+    card.append(h('div', { class: 'actions' },
+      h('button', { class: 'btn primary', type: 'button', disabled: q.type === 'mcq' && s.choice == null, onclick: () => submit(false) }, 'Check answer'),
+      h('button', { class: 'btn', type: 'button', onclick: () => submit(true) }, "I don't know"),
+      h('span', { class: 'hint' }, q.type === 'mcq' ? 'Keys A–D to pick, Enter to check' : 'Enter to check')));
+  } else {
+    const r = s.last;
+    card.append(h('div', { class: 'verdict ' + (r.ok ? 'ok' : 'no') },
+      h('span', null, r.ok ? 'Correct' : r.skipped ? 'Skipped' : 'Not quite'),
+      !r.ok ? h('span', { style: 'font-weight:500' }, 'Answer: ', correctText(q)) : null,
+      h('span', { class: 'mono' }, fmtSec(r.sec))));
+    card.append(h('div', { class: 'sol' }, h('b', null, 'Solution'), q.sol || 'No solution added for this question.'));
+    if (!r.ok) {
+      card.append(h('div', { class: 'why' }, h('p', null, 'What went wrong?'),
+        h('div', { class: 'pills' }, Object.entries(REASONS).map(([k, label]) =>
+          h('button', { class: 'pill', type: 'button', 'aria-pressed': r.reason === k ? 'true' : 'false', onclick: () => updateLast({ reason: r.reason === k ? null : k }) }, label)))));
+    }
+    const last = s.i + 1 >= total;
+    card.append(h('div', { class: 'actions' },
+      h('button', { class: 'btn primary', type: 'button', onclick: next }, last ? (s.kind === 'daily' ? "See today's summary" : 'Finish review') : 'Next question'),
+      h('button', { class: 'pill flag', type: 'button', 'aria-pressed': r.doubt ? 'true' : 'false', onclick: () => updateLast({ doubt: !r.doubt }) }, r.doubt ? 'Flagged as doubt' : 'Flag as doubt'),
+      h('span', { class: 'hint' }, 'Doubts show on the Progress page')));
+  }
+  return card;
+}
+
+function summaryCard(answers, title) {
+  const ok = answers.filter(a => a.ok).length;
+  const time = answers.reduce((t, a) => t + (a.sec || 0), 0);
+  const per = { P: [0, 0], C: [0, 0], M: [0, 0] };
+  for (const a of answers) { const q = S.byId[a.qid]; if (q) { per[q.s][1]++; if (a.ok) per[q.s][0]++; } }
+  return h('section', { class: 'card enter stack' },
+    h('div', null, h('h2', null, title),
+      h('div', { class: 'score' }, h('span', { class: 'big mono' }, ok), h('span', { class: 'of' }, `/ ${answers.length} correct`),
+        h('span', { class: 'muted' }, `in ${fmtSec(time)}`))),
+    h('div', { class: 'pills' }, ['P', 'C', 'M'].filter(k => per[k][1]).map(k => h('span', { class: 'chip ' + k }, `${SUBJ[k]} ${per[k][0]}/${per[k][1]}`))),
+    h('div', { class: 'rows' }, answers.map((a, i) => {
+      const q = S.byId[a.qid]; if (!q) return null;
+      return h('div', { class: 'row' }, h('span', { class: 'mark ' + (a.ok ? 'ok' : 'no'), 'aria-label': a.ok ? 'correct' : 'wrong' }, a.ok ? '✓' : '✗'),
+        chip(q.s), h('span', null, q.ch), h('span', { class: 'mono muted rt' }, a.reason ? REASONS[a.reason] : ''), h('span', { class: 'mono' }, fmtSec(a.sec)));
+    })));
+}
+
+function renderToday(main) {
+  const t = S.today;
+  const st = streakOf(S.myDays, t.date);
+  main.append(h('h1', null, fmtLong(t.date)),
+    h('p', { class: 'sub' }, isDone(t) ? "Today's 10 are done." : `${t.qids.length - (t.answers || []).length} questions left today · Previous-year style, Physics + Chemistry + Maths`, st ? ` · ${st}-day streak` : ''));
+  if (S.isOwner) main.append(h('p', { class: 'banner' }, "You're the owner of this page. Questions you answer here are saved under your account and kept separate from your brother's progress."));
+  if (!isDone(t) || (S.sess.daily && S.sess.daily.phase === 'result')) {
+    if (!S.sess.daily) startSession('daily', t.qids);
+    S.session = S.sess.daily;
+    main.append(questionCard());
+  } else {
+    main.append(summaryCard(t.answers, "Today's result"));
+    const due = notebook(S.myDays, t.date).filter(i => i.isDue);
+    main.append(h('section', { class: 'card', style: 'margin-top:16px' },
+      h('h2', null, due.length ? `${due.length} mistake${due.length > 1 ? 's' : ''} due for another try` : 'No mistakes due for review'),
+      h('p', { class: 'muted', style: 'margin:0 0 12px' }, 'Questions you get wrong come back 3 days later. Get one right twice in a row and it leaves the notebook.'),
+      due.length ? h('button', { class: 'btn primary', type: 'button', onclick: () => { startSession('review', due.slice(0, 10).map(i => i.qid)); location.hash = '#mistakes'; } }, `Review ${Math.min(10, due.length)} now`) : h('p', { class: 'muted', style: 'margin:0' }, 'Come back tomorrow for a fresh 10.')));
+  }
+}
+
+function renderMistakes(main) {
+  const s = S.sess.review; S.session = s;
+  if (s) {
+    main.append(h('h1', null, 'Mistake review'), h('p', { class: 'sub' }, 'Questions you got wrong earlier. No pressure on time here.'));
+    if (s.phase === 'done') {
+      main.append(summaryCard(s.results, 'Review done'));
+      main.append(h('div', { class: 'actions' }, h('button', { class: 'btn', type: 'button', onclick: () => { S.sess.review = S.session = null; render(); } }, 'Back to the notebook')));
+    } else main.append(questionCard());
+    return;
+  }
+  const items = notebook(S.myDays, S.today.date);
+  const due = items.filter(i => i.isDue).sort((a, b) => a.due.localeCompare(b.due));
+  const waiting = items.filter(i => !i.mastered && !i.isDue).sort((a, b) => a.due.localeCompare(b.due));
+  const mastered = items.filter(i => i.mastered);
+  main.append(h('h1', null, 'Mistake notebook'),
+    h('p', { class: 'sub' }, `${due.length} due now · ${waiting.length} coming back later · ${mastered.length} fixed`));
+  if (!items.length) { main.append(h('section', { class: 'card empty' }, 'No mistakes yet. Wrong answers land here and come back for another try after 3 days.')); return; }
+  if (due.length) main.append(h('div', { class: 'actions', style: 'margin:0 0 16px' }, h('button', { class: 'btn primary', type: 'button', onclick: () => { startSession('review', due.slice(0, 10).map(i => i.qid)); render(); } }, `Start review (${Math.min(10, due.length)} questions)`)));
+  const list = (title, arr, note) => arr.length ? h('section', { class: 'card', style: 'margin-bottom:16px' }, h('h2', null, title), arr.map(i => mistakeItem(i, note))) : null;
+  main.append(list('Due now', due, i => `Got it wrong on ${fmtShort(i.firstWrong.date)}`),
+    list('Coming back later', waiting, i => `Back on ${fmtShort(i.due)}`),
+    list('Fixed', mastered, () => 'Right twice in a row'));
+}
+function mistakeItem(i, note) {
+  const q = S.byId[i.qid];
+  return h('div', { class: 'mist' },
+    h('div', { class: 'meta' }, chip(q.s), h('span', null, q.ch), h('span', null, '· ' + note(i)), i.firstWrong.reason ? h('span', { class: 'tag warn' }, REASONS[i.firstWrong.reason]) : null),
+    h('div', { class: 'qt' }, q.q),
+    h('div', { class: 'ans' }, h('span', null, h('b', null, 'First answer: '), answerText(q, i.firstWrong.given))),
+    h('details', null, h('summary', null, 'Show answer and solution'), h('div', { class: 'sol' }, h('b', null, 'Answer: ' + correctText(q)), q.sol || '')));
+}
+
+/* ---------- progress / dashboard ---------- */
+async function loadDash() {
+  const [days, logins] = await Promise.all([store.query('days'), store.query('logins')]);
+  const people = {};
+  for (const d of days) { if (!d.uid) continue; const p = people[d.uid] || (people[d.uid] = { days: {}, logins: [] }); p.days[d.date] = d; }
+  for (const l of logins) { if (!l.uid) continue; const p = people[l.uid] || (people[l.uid] = { days: {}, logins: [] }); p.logins.push(...(l.times || [])); }
+  const names = {};
+  try { for (const u of await store.query('users')) names[u._id] = { name: u.name || u.email || '' }; } catch (e) { /* names are optional */ }
+  S.dash = { people, names };
+}
+function renderProgress(main) {
+  let uid = S.uid, label = 'Your progress';
+  let days = S.myDays, logins = S.logins;
+  if (S.isOwner) {
+    if (!S.dash) { main.append(h('h1', null, 'Progress'), h('p', { class: 'loading' }, 'Loading practice history…')); loadDash().then(render).catch(() => { S.dash = { people: {}, names: {} }; render(); }); return; }
+    const ids = Object.keys(S.dash.people);
+    const others = ids.filter(id => id !== S.uid);
+    const nameOf = id => id === S.uid ? 'You (test runs)' : ((S.dash.names[id] || {}).name || 'Student');
+    if (!S.dashPick || !ids.includes(S.dashPick)) S.dashPick = others[0] || (ids.includes(S.uid) ? S.uid : null);
+    const head = h('div', { style: 'display:flex;gap:12px;align-items:end;flex-wrap:wrap;justify-content:space-between' }, h('h1', null, 'Progress'));
+    if (ids.length > 1) {
+      const sel = h('select', { class: 'pick', id: 'pick', 'aria-label': 'Whose progress' }, [...others, ...ids.filter(i => i === S.uid)].map(id => h('option', { value: id }, nameOf(id))));
+      sel.value = S.dashPick; sel.addEventListener('change', () => { S.dashPick = sel.value; render(); });
+      head.append(h('div', { style: 'margin-bottom:6px' }, sel));
+    }
+    main.append(head);
+    if (!S.dashPick) {
+      main.append(h('section', { class: 'card stack' }, h('h2', null, 'No practice saved yet'),
+        h('p', { class: 'muted', style: 'margin:0' }, "Send your brother this page's link. Once he signs in with Google and answers a question, his logins, answers and timings show up here.")));
+      main.append(addQuestionsCard());
+      return;
+    }
+    uid = S.dashPick; label = nameOf(uid);
+    days = uid === S.uid ? S.myDays : S.dash.people[uid].days;
+    logins = uid === S.uid ? S.logins : S.dash.people[uid].logins;
+    main.append(h('p', { class: 'sub' }, `${label} · all times in IST · `, h('button', { class: 'btn small', type: 'button', onclick: () => { S.dash = null; render(); } }, 'Refresh')));
+  } else {
+    main.append(h('h1', null, 'Your progress'), h('p', { class: 'sub' }, 'All times in IST'));
+  }
+  main.append(dashboard(days, logins));
+  if (S.isOwner || S.canEdit) main.append(addQuestionsCard());
+}
+
+function dashboard(days, logins) {
+  const todayK = dayKey();
+  const td = days[todayK];
+  const daily = dailyAttempts(days);
+  const wrap = h('div', { class: 'stack' });
+
+  // tiles
+  const tdAns = td ? (td.answers || []) : [];
+  const status = !td || !tdAns.length ? ['none', 'Not started'] : isDone(td) ? ['done', 'Done'] : ['part', `In progress · ${tdAns.length}/10`];
+  const week = []; for (let i = 6; i >= 0; i--) week.push(addDays(todayK, -i));
+  const wkAns = week.flatMap(k => (days[k] && days[k].answers) || []);
+  const wkDays = week.filter(k => days[k] && (days[k].answers || []).length).length;
+  const wkOk = wkAns.filter(a => a.ok).length;
+  const wkSec = wkAns.reduce((t, a) => t + (a.sec || 0), 0);
+  const todayLogins = (logins || []).filter(t => dayKey(t) === todayK).sort((a, b) => a - b);
+  wrap.append(h('div', { class: 'tiles' },
+    h('div', { class: 'tile' }, h('div', { class: 'lbl' }, 'Today'), h('div', { class: 'val' }, tdAns.length ? `${tdAns.filter(a => a.ok).length}/${tdAns.length}` : '—'),
+      h('span', { class: 'status ' + status[0] }, status[1]),
+      h('div', { class: 'note' }, todayLogins.length ? `First opened ${fmtTime(todayLogins[0])}` : 'Not opened today', tdAns.length ? ` · ${fmtSec(tdAns.reduce((t, a) => t + (a.sec || 0), 0))} total` : '')),
+    h('div', { class: 'tile' }, h('div', { class: 'lbl' }, 'Streak'), h('div', { class: 'val' }, `${streakOf(days, todayK)} day${streakOf(days, todayK) === 1 ? '' : 's'}`), h('div', { class: 'note' }, 'Days in a row with all 10 done')),
+    h('div', { class: 'tile' }, h('div', { class: 'lbl' }, 'Last 7 days'), h('div', { class: 'val' }, wkAns.length ? `${pct(wkOk, wkAns.length)}%` : '—'), h('div', { class: 'note' }, `${wkOk}/${wkAns.length} correct · practised ${wkDays} of 7 days`)),
+    h('div', { class: 'tile' }, h('div', { class: 'lbl' }, 'Avg time per question'), h('div', { class: 'val' }, wkAns.length ? fmtSec(wkSec / wkAns.length) : '—'), h('div', { class: 'note' }, 'Last 7 days · aim for 2–3 min'))));
+
+  // calendar
+  const weeks = 12; const todayDow = (keyDate(todayK).getUTCDay() + 6) % 7; // Mon=0
+  const start = addDays(todayK, -(weeks - 1) * 7 - todayDow);
+  const cal = h('div', { class: 'cal', role: 'img', 'aria-label': 'Practice calendar for the last 12 weeks' });
+  for (let i = 0; i < weeks * 7; i++) {
+    const k = addDays(start, i); const d = days[k]; const n = d ? (d.answers || []).length : 0;
+    let cls = diffDays(k, todayK) < 0 ? 'fut' : isDone(d) ? 'done' : n ? 'part' : '';
+    if (k === todayK) cls += ' today';
+    cal.append(h('span', { class: cls, title: `${fmtShort(k)}: ${n ? `${d.answers.filter(a => a.ok).length}/${n} correct` : 'no practice'}` }));
+  }
+  wrap.append(h('section', { class: 'card' }, h('h2', null, 'Practice calendar'), cal,
+    h('div', { class: 'legend' }, h('span', null, h('i', { style: 'background:var(--good)' }), 'All 10 done'), h('span', null, h('i', { style: 'background:var(--warn)' }), 'Partly done'), h('span', null, h('i', { style: 'background:var(--line)' }), 'Missed'))));
+
+  // subjects + reasons
+  const subj = { P: [0, 0, 0], C: [0, 0, 0], M: [0, 0, 0] };
+  for (const a of daily) { const q = S.byId[a.qid]; if (!q) continue; subj[q.s][1]++; subj[q.s][2] += a.sec || 0; if (a.ok) subj[q.s][0]++; }
+  const wrongs = daily.filter(a => !a.ok);
+  const rc = { concept: 0, calc: 0, misread: 0, guess: 0, none: 0 };
+  for (const a of wrongs) rc[a.reason || 'none']++;
+  wrap.append(h('div', { class: 'two' },
+    h('section', { class: 'card' }, h('h2', null, 'Accuracy by subject'),
+      daily.length ? ['P', 'C', 'M'].map(k => h('div', { class: 'bar' }, h('span', null, SUBJ[k]),
+        h('div', { class: 'track' }, h('div', { class: 'fill ' + k, style: `width:${pct(subj[k][0], subj[k][1])}%` })),
+        h('span', { class: 'pct' }, subj[k][1] ? `${pct(subj[k][0], subj[k][1])}% · ${subj[k][1]}` : '—'))) : h('p', { class: 'empty' }, 'No answers yet.'),
+      daily.length ? h('p', { class: 'note muted', style: 'font-size:13px;margin:8px 0 0' }, 'Percent correct · number attempted. Avg time: ', ['P', 'C', 'M'].filter(k => subj[k][1]).map(k => `${SUBJ[k]} ${fmtSec(subj[k][2] / subj[k][1])}`).join(', ')) : null),
+    h('section', { class: 'card' }, h('h2', null, 'Why answers went wrong'),
+      wrongs.length ? Object.entries({ ...REASONS, none: 'Not tagged' }).map(([k, l]) => h('div', { class: 'bar' }, h('span', { style: 'font-size:13px' }, l),
+        h('div', { class: 'track' }, h('div', { class: 'fill x', style: `width:${pct(rc[k], wrongs.length)}%` })), h('span', { class: 'pct' }, rc[k]))) : h('p', { class: 'empty' }, 'No wrong answers yet.'))));
+
+  // chapters
+  const ch = Object.values(chapterStats(daily)).sort((a, b) => (a.ok / a.n) - (b.ok / b.n) || b.n - a.n);
+  wrap.append(h('section', { class: 'card' }, h('h2', null, 'Chapters, weakest first'),
+    ch.length ? h('div', { class: 'tbl-wrap' }, h('table', null,
+      h('thead', null, h('tr', null, h('th', null, 'Chapter'), h('th', null, 'Subject'), h('th', { class: 'num' }, 'Right'), h('th', { class: 'num' }, 'Accuracy'), h('th', { class: 'num' }, 'Avg time'))),
+      h('tbody', null, ch.map(r => h('tr', null,
+        h('td', null, r.ch, r.n >= 2 && r.ok / r.n < 0.6 ? h('span', { class: 'tag' }, 'Weak') : null),
+        h('td', null, chip(r.s)), h('td', { class: 'num mono' }, `${r.ok}/${r.n}`), h('td', { class: 'num mono' }, `${pct(r.ok, r.n)}%`), h('td', { class: 'num mono' }, fmtSec(r.sec / r.n))))))) : h('p', { class: 'empty' }, 'Chapters appear after the first answers.'),
+    ch.length ? h('p', { class: 'muted', style: 'font-size:13px;margin:10px 0 0' }, 'Weak = under 60% with at least 2 attempts. Each daily set includes up to 2 questions per subject from weak chapters.') : null));
+
+  // recent mistakes
+  const recent = wrongs.slice().sort((a, b) => b.at - a.at).slice(0, 15);
+  wrap.append(h('section', { class: 'card' }, h('h2', null, 'Recent wrong answers'),
+    recent.length ? recent.map(a => {
+      const q = S.byId[a.qid]; if (!q) return null;
+      return h('div', { class: 'mist' },
+        h('div', { class: 'meta' }, chip(q.s), h('span', null, q.ch), h('span', null, `· ${fmtShort(dayKey(a.at))}, ${fmtTime(a.at)}`),
+          a.reason ? h('span', { class: 'tag warn' }, REASONS[a.reason]) : null,
+          a.sec > SLOW ? h('span', { class: 'tag warn' }, `Slow: ${fmtSec(a.sec)}`) : a.sec < RUSHED && !a.skipped ? h('span', { class: 'tag' }, `Rushed: ${fmtSec(a.sec)}`) : h('span', { class: 'mono' }, fmtSec(a.sec)),
+          a.doubt ? h('span', { class: 'tag warn' }, 'Doubt') : null),
+        h('div', { class: 'qt' }, q.q),
+        h('div', { class: 'ans' }, h('span', null, h('b', null, 'Answered: '), answerText(q, a.given)), h('span', null, h('b', null, 'Correct: '), correctText(q))),
+        h('details', null, h('summary', null, 'Solution'), h('div', { class: 'sol' }, q.sol || '')));
+    }) : h('p', { class: 'empty' }, 'Nothing wrong yet.')));
+
+  // doubts
+  const doubts = allAttempts(days).filter(a => a.doubt).sort((a, b) => b.at - a.at).slice(0, 20);
+  wrap.append(h('section', { class: 'card' }, h('h2', null, 'Flagged doubts'),
+    doubts.length ? doubts.map(a => { const q = S.byId[a.qid]; if (!q) return null;
+      return h('div', { class: 'mist' }, h('div', { class: 'meta' }, chip(q.s), h('span', null, q.ch), h('span', null, `· flagged ${fmtShort(dayKey(a.at))}`), h('span', { class: 'tag ' + (a.ok ? 'good' : '') }, a.ok ? 'Got it right' : 'Got it wrong')),
+        h('div', { class: 'qt' }, q.q), h('details', null, h('summary', null, 'Answer and solution'), h('div', { class: 'sol' }, h('b', null, 'Answer: ' + correctText(q)), q.sol || ''))); })
+      : h('p', { class: 'empty' }, 'No doubts flagged. Questions marked "Flag as doubt" appear here.')));
+
+  // logins
+  const byDay = {};
+  for (const t of (logins || []).slice().sort((a, b) => b - a)) (byDay[dayKey(t)] || (byDay[dayKey(t)] = [])).push(t);
+  const loginDays = Object.keys(byDay).sort().reverse().slice(0, 14);
+  wrap.append(h('section', { class: 'card' }, h('h2', null, 'When the site was opened'),
+    loginDays.length ? h('div', { class: 'logins' }, loginDays.map(k => h('div', null, h('span', { class: 'muted' }, fmtShort(k)), h('span', { class: 'mono' }, byDay[k].slice().reverse().map(t => timeFmt.format(new Date(t))).join(' · '))))) : h('p', { class: 'empty' }, 'No visits recorded yet.'),
+    h('p', { class: 'muted', style: 'font-size:13px;margin:10px 0 0' }, 'Last 14 days with visits, in IST. Visits less than 15 minutes apart count once.')));
+  return wrap;
+}
+
+function addQuestionsCard() {
+  const ta = h('textarea', { id: 'addq', spellcheck: 'false', 'aria-label': 'Questions as JSON' });
+  const out = h('p', { class: 'muted', style: 'margin:8px 0 0;font-size:14px', role: 'status' });
+  const example = `[
+  {"s":"P","ch":"Kinematics","type":"mcq",
+   "q":"A body starts from rest with $a = 2$ m/s². Distance in 5 s?",
+   "o":["25 m","50 m","10 m","20 m"],"a":0,
+   "sol":"$s = \\\\tfrac12 at^2 = 25$ m"},
+  {"s":"M","ch":"Binomial Theorem","type":"int",
+   "q":"Coefficient of $x^2$ in $(1+x)^6$?","a":15,
+   "sol":"$\\\\binom{6}{2} = 15$"}
+]`;
+  const btn = h('button', { class: 'btn primary', type: 'button' }, 'Add questions');
+  btn.addEventListener('click', async () => {
+    let arr; try { arr = JSON.parse(ta.value); } catch (e) { out.textContent = "That isn't valid JSON. Check for missing commas or quotes."; return; }
+    if (!Array.isArray(arr)) arr = [arr];
+    const good = [], bad = [];
+    arr.forEach((q, i) => { const v = validQ(q); if (v) good.push(v); else bad.push(i + 1); });
+    if (!good.length) { out.textContent = `None of the ${arr.length} entries had the required fields (s, ch, type, q, and o + a for mcq or a number for int).`; return; }
+    btn.disabled = true; out.textContent = `Adding ${good.length}…`;
+    const stamp = Date.now().toString(36);
+    let n = 0;
+    for (const q of good) {
+      q.id = `x${stamp}${n}`;
+      try { await withTimeout(store.set('extraq/' + q.id, { ...q, addedAt: Date.now() }), 10000); S.bank.push(q); S.byId[q.id] = q; n++; }
+      catch (e) { out.textContent = `Stopped after ${n}: the question could not be saved.`; btn.disabled = false; return; }
+    }
+    out.textContent = `Added ${n} question${n === 1 ? '' : 's'}${bad.length ? `. Skipped entries ${bad.join(', ')} (missing fields)` : ''}. The bank now has ${S.bank.length}. New questions start appearing in tomorrow's set.`;
+    ta.value = ''; btn.disabled = false;
+  });
+  return h('section', { class: 'card', style: 'margin-top:16px' }, h('h2', null, `Add questions · bank has ${S.bank.length}`),
+    h('p', { class: 'muted', style: 'margin:0', }, 'Paste previous-year questions from his books or papers as JSON. s is P, C or M; a is the index of the right option (0 = A) for mcq, or the number for int. Use $…$ for maths.'),
+    h('details', null, h('summary', null, 'See the format'), h('pre', { class: 'ex' }, example)), ta, h('div', { class: 'actions' }, btn), out);
+}
+function validQ(q) {
+  if (!q || typeof q !== 'object') return null;
+  const s = String(q.s || '').toUpperCase().slice(0, 1);
+  if (!['P', 'C', 'M'].includes(s) || typeof q.q !== 'string' || !q.q.trim() || typeof q.ch !== 'string' || !q.ch.trim()) return null;
+  const base = { s, ch: q.ch.trim().slice(0, 80), q: q.q.slice(0, 4000), sol: typeof q.sol === 'string' ? q.sol.slice(0, 4000) : '' };
+  if (q.type === 'int') { const a = Number(q.a); return Number.isFinite(a) ? { ...base, type: 'int', a } : null; }
+  if (q.type === 'mcq' && Array.isArray(q.o) && q.o.length === 4 && q.o.every(x => typeof x === 'string') && Number.isInteger(q.a) && q.a >= 0 && q.a < 4) return { ...base, type: 'mcq', o: q.o.map(x => x.slice(0, 1000)), a: q.a };
+  return null;
+}
+
+/* ---------- render ---------- */
+function currentView() { const v = (location.hash || '').slice(1); return ['today', 'mistakes', 'progress'].includes(v) ? v : 'today'; }
+function render() {
+  const main = document.getElementById('main');
+  const view = currentView();
+  for (const v of ['today', 'mistakes', 'progress']) { const a = document.getElementById('tab-' + v); if (v === view) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); }
+  document.getElementById('wrap').classList.toggle('wide', view === 'progress');
+  if (!S.today) return;
+  const dueN = notebook(S.myDays, S.today.date).filter(i => i.isDue).length;
+  const dc = document.getElementById('due-count'); dc.hidden = !dueN; dc.textContent = dueN;
+  main.replaceChildren();
+  S.session = null;
+  if (view === 'today') renderToday(main); else if (view === 'mistakes') renderMistakes(main); else renderProgress(main);
+  for (const x of Object.values(S.sess)) {
+    if (!x || x.phase !== 'ask') continue;
+    if (x === S.session && !document.hidden) { if (!x.since) x.since = Date.now(); }
+    else if (x.since) { x.elapsed += Date.now() - x.since; x.since = null; }
+  }
+  typeset(main);
+}
+window.addEventListener('hashchange', render);
+
+/* ---------- sign-in ---------- */
+function showSignIn(auth) {
+  const msg = h('p', { class: 'muted', role: 'status', style: 'margin:12px 0 0;font-size:14px' });
+  const btn = h('button', { class: 'btn primary', type: 'button' }, 'Sign in with Google');
+  btn.addEventListener('click', () => {
+    const provider = new firebase.auth.GoogleAuthProvider();
+    msg.textContent = '';
+    auth.signInWithPopup(provider).catch(e => {
+      if (e && (e.code === 'auth/popup-blocked' || e.code === 'auth/operation-not-supported-in-environment')) return auth.signInWithRedirect(provider);
+      if (e && e.code === 'auth/popup-closed-by-user') return;
+      msg.textContent = "Sign-in didn't work: " + (e && e.message ? e.message : 'unknown error') + ' Try again.';
+    });
+  });
+  setSave('off', 'Signed out');
+  document.getElementById('main').replaceChildren(h('section', { class: 'card stack', style: 'margin-top:24px' },
+    h('h1', { style: 'margin:0' }, 'Sign in to start today\'s 10'),
+    h('p', { class: 'muted', style: 'margin:0' }, 'Signing in saves your answers, streak and mistake notebook so you can continue on any device.'),
+    h('div', null, btn), msg));
+}
+
+/* ---------- boot ---------- */
+async function boot() {
+  render();
+  try {
+    const res = await fetch('questions.json'); S.bank = await res.json();
+  } catch (e) { document.getElementById('main').replaceChildren(h('p', { class: 'loading' }, "Couldn't load the question bank. Reload the page to try again.")); return; }
+  for (const q of S.bank) S.byId[q.id] = q;
+
+  // connect to Firebase (config.js)
+  const cfg = window.DAILY10_CONFIG || {};
+  const ready = window.firebase && cfg.firebase && cfg.firebase.apiKey && !/PASTE/.test(cfg.firebase.apiKey);
+  if (ready) {
+    try {
+      firebase.initializeApp(cfg.firebase);
+      const auth = firebase.auth();
+      const user = await new Promise(res => { const off = auth.onAuthStateChanged(u => { if (u) { off(); res(u); } else showSignIn(auth); }); });
+      S.authUser = user; S.uid = user.uid; S.db = firebase.firestore();
+      const owners = (cfg.ownerEmails || []).map(e => String(e).toLowerCase());
+      S.isOwner = S.canEdit = owners.includes(String(user.email || '').toLowerCase());
+      persist('users/' + user.uid, { name: user.displayName || '', email: user.email || '' });
+      const so = document.getElementById('signout'); so.hidden = false;
+      so.addEventListener('click', () => auth.signOut().then(() => location.reload()));
+    } catch (e) { S.db = null; }
+  }
+  if (!S.db) { setSave('off', 'Not saving'); banner(ready ? "Couldn't connect to the progress database. Check your connection and reload." : 'This copy is not connected to Firebase yet (config.js), so answers are not saved.'); }
+
+  const today = dayKey();
+  const dayId = safeSeg(S.uid) + '_' + today;
+  try {
+    const [mine, extra] = await withTimeout(Promise.all([store.query('days', 'uid', S.uid), store.query('extraq')]), 10000);
+    for (const d of mine) if (d.date) S.myDays[d.date] = d;
+    for (const raw of extra) { const q = validQ(raw); if (q && !S.byId[raw._id]) { q.id = raw._id; S.bank.push(q); S.byId[q.id] = q; } }
+  } catch (e) {
+    if (S.db) { banner("Saved progress couldn't be reached, so today's practice won't be saved. Check the connection and reload."); setSave('error', 'Offline'); S.db = null; }
+  }
+  if (S.db && !S.readOnly) setSave('', 'Saved');
+
+  // log this visit (once per 15 minutes)
+  try {
+    const lpath = 'logins/' + dayId;
+    const ldoc = (await withTimeout(store.get(lpath), 10000)) || { uid: S.uid, date: today, times: [] };
+    const last = ldoc.times[ldoc.times.length - 1] || 0;
+    if (Date.now() - last > 15 * 60 * 1000) { ldoc.times = ldoc.times.concat(Date.now()).slice(-60); persist(lpath, ldoc); }
+    const mineL = await withTimeout(store.query('logins', 'uid', S.uid), 10000);
+    S.logins = mineL.flatMap(l => l._id === dayId ? ldoc.times : (l.times || []));
+    if (!mineL.some(l => l._id === dayId)) S.logins.push(...ldoc.times);
+  } catch (e) { /* visit log is best-effort */ }
+
+  // today's set
+  let td = S.myDays[today];
+  if (!td || !Array.isArray(td.qids) || !td.qids.length) {
+    td = { uid: S.uid, date: today, qids: buildDailySet(today), answers: [], reviews: [], createdAt: Date.now() };
+    S.myDays[today] = td; td._id = dayId; saveDay(td);
+  } else td._id = dayId;
+  td.qids = td.qids.filter(id => S.byId[id]);
+  S.today = td;
+  render();
+}
+boot();
+</script>
+</body>
+</html>

@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+
+    // Replace with the same email you put in config.js ownerEmails.
+    function isOwner() {
+      return signedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in ['paste_your_email@gmail.com'];
+    }
+
+    // Reading a document that belongs to you (or one that doesn't exist yet).
+    function readsOwn() {
+      return signedIn() && (resource == null || resource.data.uid == request.auth.uid);
+    }
+
+    // Writing a document keyed "<your uid>_<date>" that names you as its owner.
+    function writesOwn(id) {
+      return signedIn()
+        && request.resource.data.uid == request.auth.uid
+        && id.matches(request.auth.uid + '_[0-9-]+');
+    }
+
+    // One document per student per day: the daily set, answers, timings, reviews.
+    match /days/{id} {
+      allow read: if isOwner() || readsOwn();
+      allow create: if writesOwn(id);
+      allow update: if writesOwn(id) && resource.data.uid == request.auth.uid;
+      allow delete: if isOwner();
+    }
+
+    // One document per student per day: the times the site was opened.
+    match /logins/{id} {
+      allow read: if isOwner() || readsOwn();
+      allow create: if writesOwn(id);
+      allow update: if writesOwn(id) && resource.data.uid == request.auth.uid;
+      allow delete: if isOwner();
+    }
+
+    // Name and email of each person who signed in (for the Progress page picker).
+    match /users/{uid} {
+      allow read: if isOwner() || (signedIn() && request.auth.uid == uid);
+      allow write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Questions added from the Progress page.
+    match /extraq/{id} {
+      allow read: if signedIn();
+      allow write: if isOwner();
+    }
+  }
+}
