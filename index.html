@@ -188,6 +188,10 @@ a:focus-visible,button:focus-visible{outline:2px solid var(--cobalt);outline-off
 .fig .u{fill:var(--slate);opacity:.55}
 .fig .bar{fill:var(--slate);opacity:.45}
 .fig .track{fill:var(--hair)}
+.projects .wide{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 40px}
+.projects .wide .fig{order:2;margin:-26px -26px -26px 0;border-bottom:0;border-left:var(--wall) solid var(--midnight);display:flex;align-items:center}
+.projects .wide .go{margin-top:14px}
+@media(max-width:900px){.projects .wide{grid-template-columns:1fr}.projects .wide .fig{order:0;margin:-26px -26px 22px;border-left:0;border-bottom:var(--wall) solid var(--midnight)}}
 .projects .lead{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:44px;align-items:center}
 .projects .lead .fig{margin:0;padding:0;border:0;background:none;
   --midnight:var(--panel-ink);--slate:var(--panel-soft);--plaster:transparent;--cobalt:var(--panel-r1);--saffron:var(--panel-accent)}
@@ -379,6 +383,18 @@ footer{border-top:1px solid var(--hair);padding:22px 0 150px;font-size:14px;colo
         <h3>Agentic multimodal RAG</h3>
         <p>A retrieval system where an agent chooses how to answer: vector search in Qdrant over SigLIP image and text embeddings, a Neo4j graph for relationships, and local models through Ollama.</p>
         <div class="stack">Qdrant / SigLIP / Neo4j / Ollama</div>
+      </article>
+
+      <article class="wide">
+        <div class="fig"><svg viewBox="0 6 366 146" role="img" aria-label="A bank of past-paper questions feeds a timed daily set of ten mixed physics, chemistry and maths questions, which feeds a progress page; wrong answers loop back into the daily set after three days."><rect class="n" x="8" y="40" width="92" height="40"/><text x="54.0" y="64.5" text-anchor="middle">Question bank</text><text class="s" x="54.0" y="95" text-anchor="middle">748 questions</text><path class="w" d="M100 60H115"/><polygon class="h" points="120,60 114,56.5 114,63.5"/><rect class="n" x="120" y="30" width="132" height="60"/><text class="s" x="186" y="20" text-anchor="middle">today's 10, timed</text><rect class="c1" x="132" y="40" width="16" height="16"/><rect class="c2" x="154" y="40" width="16" height="16"/><rect class="u" x="176" y="40" width="16" height="16"/><rect class="c1" x="198" y="40" width="16" height="16"/><rect class="c2" x="220" y="40" width="16" height="16"/><rect class="u" x="132" y="62" width="16" height="16"/><rect class="u" x="154" y="62" width="16" height="16"/><rect class="c2" x="176" y="62" width="16" height="16"/><rect class="c1" x="198" y="62" width="16" height="16"/><rect class="c1" x="220" y="62" width="16" height="16"/><path class="w" d="M252 60H267"/><polygon class="h" points="272,60 266,56.5 266,63.5"/><rect class="n" x="272" y="40" width="86" height="40"/><text x="315.0" y="64.5" text-anchor="middle">Progress</text><text class="s" x="315.0" y="95" text-anchor="middle">weak chapters</text><path class="w" d="M232 90V124H140V95"/><polygon class="h" points="140,90 136.5,96 143.5,96"/><text class="s" x="186" y="142" text-anchor="middle">wrong answers return after 3 days</text></svg></div>
+        <div>
+          <div class="kind">Live web app</div>
+          <h3>Daily 10: JEE practice</h3>
+          <p>I built this for my brother while he prepares for JEE, MHT-CET and BITSAT. Each day it serves 10 mixed physics, chemistry and maths questions, mostly from the real JEE Main 2025 papers, with a timer on each and the solution once he answers. Wrong answers come back three days later.</p>
+          <p>A progress page shows scores, weak chapters and time per question. Google sign-in and Firestore rules keep each student's data visible only to them and to me. The question bank is 748 past-paper questions with figures, tagged by shift and checked against the official answer keys.</p>
+          <div class="stack">JavaScript / Firebase Auth / Firestore / MathJax / GitHub Pages</div>
+          <p class="go"><a class="tlink" href="https://atharvanilkanth.github.io/Daily-10--JEE/" target="_blank" rel="noopener">Open Daily 10</a></p>
+        </div>
       </article>
 
       <article class="half">
